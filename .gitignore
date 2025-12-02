@@ -1,0 +1,24 @@
+# --- Segurança (CRÍTICO) ---
+.env
+db.sqlite3
+
+# --- Python / Django (Lixo de compilação) ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.log
+local_settings.py
+
+# --- Ambiente Virtual (Não sobe pra nuvem) ---
+venv/
+env/
+.venv/
+
+# --- Arquivos Estáticos e Mídia ---
+staticfiles/
+media/
+
+# --- Windows (Lixo do SO) ---
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/

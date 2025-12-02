@@ -1,0 +1,149 @@
+    <!DOCTYPE html>
+    <html lang="pt-br">
+    <head>
+        <meta charset="UTF-8">
+        <title>Negociação - {{ t.devedor.nome }}</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-light">
+
+        <div class="container mt-5 mb-5">
+            
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">← Voltar para Dashboard</a>
+                <span class="badge bg-secondary">Cód. Título: {{ t.codigo_titulo_externo }}</span>
+            </div>
+
+            {% if mensagem %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ mensagem }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endif %}
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            👤 Dados do Devedor
+                        </div>
+                        <div class="card-body">
+                            <h5>{{ t.devedor.nome }}</h5>
+                            <p class="text-muted mb-1">{{ t.devedor.codigo_externo }}</p>
+                            <hr>
+                            <p><strong>CPF/CNPJ:</strong> {{ t.devedor.cpf_cnpj }}</p>
+                            <p><strong>Email:</strong> {{ t.devedor.email }}</p>
+                            <p><strong>Tel:</strong> {{ t.devedor.telefone }}</p>
+                            <p class="mb-0"><strong>Endereço:</strong><br>
+                             {{ t.devedor.logradouro }}, {{ t.devedor.numero }}<br>
+                             {{ t.devedor.bairro }} - {{ t.devedor.cidade }}/{{ t.devedor.uf }}
+                         </p>
+                     </div>
+                 </div>
+             </div>
+
+             <div class="col-md-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white d-flex justify-content-between">
+                        <strong>🧾 Detalhes da Dívida</strong>
+                        <span>Doc: {{ t.numero_doc }}</span>
+                    </div>
+                    <div class="card-body">
+                        
+                        <div class="alert alert-warning d-flex justify-content-between align-items-center">
+                            <span>Vencimento Original: <strong>{{ t.dt_vencimento|date:"d/m/Y" }}</strong></span>
+                            {% if t.dias_atraso > 0 %}
+                            <span class="badge bg-danger">{{ t.dias_atraso }} dias de atraso</span>
+                            {% else %}
+                            <span class="badge bg-success">Em dia</span>
+                            {% endif %}
+                        </div>
+
+                        <table class="table">
+                            <tr>
+                                <td>Valor Original</td>
+                                <td class="text-end">R$ {{ t.valor_original }}</td>
+                            </tr>
+                            <tr>
+                                <td>Multa (2%) + Juros</td>
+                                <td class="text-end text-danger">+ R$ {{ t.valor_atualizado|add:"-1"|add:t.valor_original }} (aprox)</td>
+                            </tr>
+                            <tr class="table-active fw-bold fs-4">
+                                <td>TOTAL ATUALIZADO</td>
+                                <td class="text-end text-success">R$ {{ t.valor_atualizado }}</td>
+                            </tr>
+                        </table>
+
+                        <hr>
+
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div class="d-grid gap-2">
+                                {% if t.status == 'ABERTO' %}
+                                <button type="submit" name="btn_acordo" class="btn btn-success btn-lg">
+                                    ✅ Confirmar Acordo e Baixar
+                                </button>
+                                <a href="{% url 'boleto_visual' t.id %}" target="_blank" class="btn btn-outline-primary">
+                                    🖨️ Gerar Boleto Atualizado
+                                </a>
+                                {% else %}
+                                <div class="alert alert-info text-center mb-0">
+                                    ✅ Este título já foi negociado/pago.
+                                </div>
+                                {% endif %}
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-header bg-secondary text-white">
+                        🗣️ Histórico de Relacionamento
+                    </div>
+                    <div class="card-body">
+                        
+                        <form method="POST" class="mb-4 p-3 bg-light rounded border">
+                            {% csrf_token %}
+                            <label class="fw-bold mb-2">Nova Interação:</label>
+                            <div class="row g-2">
+                                <div class="col-md-3">
+                                    <select name="tipo_contato" class="form-select">
+                                        <option value="LIGACAO">📞 Ligação</option>
+                                        <option value="WHATSAPP">📱 WhatsApp</option>
+                                        <option value="EMAIL">📧 E-mail</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-7">
+                                    <input type="text" name="anotacao" class="form-control" placeholder="Ex: Cliente prometeu pagar dia 15..." required>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" name="btn_anotacao" class="btn btn-dark w-100">Salvar</button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <div class="list-group list-group-flush">
+                            {% for h in historico %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">
+                                        {{ h.get_tipo_display }}
+                                    </h6>
+                                    <small class="text-muted">{{ h.data_hora|date:"d/m/Y H:i" }}</small>
+                                </div>
+                                <p class="mb-1 text-break">{{ h.anotacao }}</p>
+                                <small class="text-muted">Registrado por: {{ h.usuario.username|default:"Sistema" }}</small>
+                            </div>
+                            {% empty %}
+                            <div class="text-center p-3 text-muted">
+                                Nenhum histórico encontrado. Seja o primeiro a registrar!
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                    </div>
+                </div>
+            </div> </div> </div> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        </body>
+        </html>
