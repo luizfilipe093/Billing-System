@@ -1,149 +1,266 @@
-    <!DOCTYPE html>
-    <html lang="pt-br">
-    <head>
-        <meta charset="UTF-8">
-        <title>Negociação - {{ t.devedor.nome }}</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    </head>
-    <body class="bg-light">
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Negociação | {{ t.devedor.nome }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #95a5a6;
+            --bg-body: #f4f6f9;
+            --text-main: #2c3e50;
+        }
+        body { background-color: var(--bg-body); font-family: 'Inter', sans-serif; color: var(--text-main); }
+        
+        /* Cards */
+        .card { border: none; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); background: #fff; margin-bottom: 1.5rem; }
+        .card-header { background-color: #fff; border-bottom: 1px solid #f0f0f0; font-weight: 600; color: var(--primary-color); padding: 1rem; }
+        
+        /* Badges */
+        .badge-secondary { background-color: #e1e4e8; color: #2c3e50; font-weight: 500; }
+        
+        /* Inputs e Botões */
+        .form-control:focus, .form-select:focus { border-color: var(--primary-color); box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.15); }
+        .btn-primary { background-color: var(--primary-color); border-color: var(--primary-color); }
+        .btn-primary:hover { background-color: #1a252f; }
+        .btn-outline-secondary { color: var(--secondary-color); border-color: #dce1e6; }
+        .btn-outline-secondary:hover { background-color: #f8f9fa; color: var(--primary-color); }
 
-        <div class="container mt-5 mb-5">
-            
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">← Voltar para Dashboard</a>
-                <span class="badge bg-secondary">Cód. Título: {{ t.codigo_titulo_externo }}</span>
-            </div>
+        /* Destaque de Valor */
+        .valor-destaque { font-size: 1.5rem; font-weight: 700; color: var(--primary-color); }
+        
+        /* Tabela Preview */
+        .table-preview td { padding: 0.5rem 0; border-bottom: 1px dashed #eee; }
+        .table-preview tr:last-child td { border-bottom: none; }
+    </style>
+</head>
+<body>
 
-            {% if mensagem %}
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ mensagem }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-            {% endif %}
+    <div class="container py-5">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm">← Voltar ao Painel</a>
+            <span class="badge badge-secondary px-3 py-2">Título: {{ t.codigo_titulo_externo }}</span>
+        </div>
 
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-header bg-primary text-white">
-                            👤 Dados do Devedor
+        {% if mensagem %}
+        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert">
+            <strong>Sucesso!</strong> {{ mensagem }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        👤 Dados do Cliente
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title mb-1">{{ t.devedor.nome }}</h5>
+                        <p class="text-muted small mb-3">Cód: {{ t.devedor.codigo_externo }}</p>
+                        
+                        <ul class="list-unstyled small mb-0">
+                            <li class="mb-2"><strong>CPF/CNPJ:</strong> <br>{{ t.devedor.cpf_cnpj }}</li>
+                            <li class="mb-2"><strong>E-mail:</strong> <br><a href="mailto:{{ t.devedor.email }}" class="text-decoration-none">{{ t.devedor.email }}</a></li>
+                            <li class="mb-2"><strong>Telefone:</strong> <br>{{ t.devedor.telefone }}</li>
+                            <li class="mb-0"><strong>Endereço:</strong> <br>
+                                {{ t.devedor.logradouro }}, {{ t.devedor.numero }}<br>
+                                {{ t.devedor.bairro }} - {{ t.devedor.cidade }}/{{ t.devedor.uf }}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        🗣️ Histórico
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="p-3 bg-light border-bottom">
+                            <form method="POST" class="row g-2">
+                                {% csrf_token %}
+                                <div class="col-4">
+                                    <select name="tipo_contato" class="form-select form-select-sm">
+                                        <option value="LIGACAO">📞 Tel</option>
+                                        <option value="WHATSAPP">📱 Zap</option>
+                                        <option value="EMAIL">📧 Email</option>
+                                    </select>
+                                </div>
+                                <div class="col-8">
+                                    <div class="input-group input-group-sm">
+                                        <input type="text" name="anotacao" class="form-control" placeholder="Nova anotação..." required>
+                                        <button type="submit" name="btn_anotacao" class="btn btn-secondary">Salvar</button>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
-                        <div class="card-body">
-                            <h5>{{ t.devedor.nome }}</h5>
-                            <p class="text-muted mb-1">{{ t.devedor.codigo_externo }}</p>
-                            <hr>
-                            <p><strong>CPF/CNPJ:</strong> {{ t.devedor.cpf_cnpj }}</p>
-                            <p><strong>Email:</strong> {{ t.devedor.email }}</p>
-                            <p><strong>Tel:</strong> {{ t.devedor.telefone }}</p>
-                            <p class="mb-0"><strong>Endereço:</strong><br>
-                             {{ t.devedor.logradouro }}, {{ t.devedor.numero }}<br>
-                             {{ t.devedor.bairro }} - {{ t.devedor.cidade }}/{{ t.devedor.uf }}
-                         </p>
-                     </div>
-                 </div>
-             </div>
+                        <div class="list-group list-group-flush" style="max-height: 300px; overflow-y: auto;">
+                            {% for h in historico %}
+                            <div class="list-group-item border-0 border-bottom">
+                                <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+                                    <strong class="small text-dark">{{ h.get_tipo_display }}</strong>
+                                    <small class="text-muted" style="font-size: 0.7rem;">{{ h.data_hora|date:"d/m H:i" }}</small>
+                                </div>
+                                <p class="mb-1 small text-secondary">{{ h.anotacao }}</p>
+                            </div>
+                            {% empty %}
+                            <div class="text-center p-4 text-muted small">Nenhum registro.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-             <div class="col-md-8">
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-white d-flex justify-content-between">
-                        <strong>🧾 Detalhes da Dívida</strong>
-                        <span>Doc: {{ t.numero_doc }}</span>
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>🧾 Simulador de Acordo</span>
+                        <span class="badge bg-light text-dark border">Doc: {{ t.numero_doc }}</span>
                     </div>
                     <div class="card-body">
                         
-                        <div class="alert alert-warning d-flex justify-content-between align-items-center">
-                            <span>Vencimento Original: <strong>{{ t.dt_vencimento|date:"d/m/Y" }}</strong></span>
-                            {% if t.dias_atraso > 0 %}
-                            <span class="badge bg-danger">{{ t.dias_atraso }} dias de atraso</span>
-                            {% else %}
-                            <span class="badge bg-success">Em dia</span>
-                            {% endif %}
+                        <div class="d-flex justify-content-between align-items-center p-3 mb-4 bg-light rounded border">
+                            <div>
+                                <span class="d-block text-muted small text-uppercase fw-bold">Saldo Devedor Atualizado</span>
+                                <span class="text-muted small">Vencimento Orig: {{ t.dt_vencimento|date:"d/m/Y" }}</span>
+                            </div>
+                            <div class="text-end">
+                                <div class="valor-destaque" id="valorTotalDisplay">R$ {{ t.valor_atualizado }}</div>
+                                {% if t.dias_atraso > 0 %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger">{{ t.dias_atraso }} dias de atraso</span>
+                                {% else %}
+                                <span class="badge bg-success bg-opacity-10 text-success">Em dia</span>
+                                {% endif %}
+                            </div>
                         </div>
-
-                        <table class="table">
-                            <tr>
-                                <td>Valor Original</td>
-                                <td class="text-end">R$ {{ t.valor_original }}</td>
-                            </tr>
-                            <tr>
-                                <td>Multa (2%) + Juros</td>
-                                <td class="text-end text-danger">+ R$ {{ t.valor_atualizado|add:"-1"|add:t.valor_original }} (aprox)</td>
-                            </tr>
-                            <tr class="table-active fw-bold fs-4">
-                                <td>TOTAL ATUALIZADO</td>
-                                <td class="text-end text-success">R$ {{ t.valor_atualizado }}</td>
-                            </tr>
-                        </table>
-
-                        <hr>
 
                         <form method="POST">
                             {% csrf_token %}
+                            
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-uppercase text-muted">Entrada (R$)</label>
+                                    <input type="number" step="0.01" name="valor_entrada" id="entradaInput" 
+                                           class="form-control form-control-lg fw-bold text-success" placeholder="0,00">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-uppercase text-muted">Parcelamento</label>
+                                    <select name="qtd_parcelas" id="parcelasInput" class="form-select form-select-lg fw-bold">
+                                        <option value="1">1x (Apenas Saldo)</option>
+                                        <option value="2">2x</option>
+                                        <option value="3">3x</option>
+                                        <option value="4">4x</option>
+                                        <option value="5">5x</option>
+                                        <option value="6">6x</option>
+                                        <option value="10">10x</option>
+                                        <option value="12">12x</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="card bg-light border-0 mb-4">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-3 text-muted text-uppercase small fw-bold">Resumo da Proposta</h6>
+                                    <table class="w-100 table-preview">
+                                        <tbody id="previewTable">
+                                            </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
                             <div class="d-grid gap-2">
                                 {% if t.status == 'ABERTO' %}
-                                <button type="submit" name="btn_acordo" class="btn btn-success btn-lg">
-                                    ✅ Confirmar Acordo e Baixar
+                                <button type="submit" name="btn_acordo" class="btn btn-success btn-lg py-3 fw-bold shadow-sm">
+                                    ✅ Confirmar Acordo
                                 </button>
-                                <a href="{% url 'boleto_visual' t.id %}" target="_blank" class="btn btn-outline-primary">
-                                    🖨️ Gerar Boleto Atualizado
-                                </a>
+                                
+                                <div class="row g-2 mt-1">
+                                    <div class="col-6">
+                                        <a href="{% url 'termo_acordo_visual' t.id %}" target="_blank" class="btn btn-outline-secondary w-100">
+                                            📄 Termo de Acordo
+                                        </a>
+                                    </div>
+                                    <div class="col-6">
+                                        <a href="{% url 'boleto_visual' t.id %}" target="_blank" class="btn btn-outline-secondary w-100">
+                                            🖨️ Boleto Original
+                                        </a>
+                                    </div>
+                                </div>
+
                                 {% else %}
-                                <div class="alert alert-info text-center mb-0">
-                                    ✅ Este título já foi negociado/pago.
+                                <div class="alert alert-info text-center mb-0 border-0 bg-opacity-25 bg-primary">
+                                    <strong>Status: {{ t.get_status_display }}</strong><br>
+                                    Este título já foi negociado. Verifique os novos boletos gerados.
                                 </div>
                                 {% endif %}
                             </div>
                         </form>
-
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <div class="card shadow-sm">
-                    <div class="card-header bg-secondary text-white">
-                        🗣️ Histórico de Relacionamento
-                    </div>
-                    <div class="card-body">
-                        
-                        <form method="POST" class="mb-4 p-3 bg-light rounded border">
-                            {% csrf_token %}
-                            <label class="fw-bold mb-2">Nova Interação:</label>
-                            <div class="row g-2">
-                                <div class="col-md-3">
-                                    <select name="tipo_contato" class="form-select">
-                                        <option value="LIGACAO">📞 Ligação</option>
-                                        <option value="WHATSAPP">📱 WhatsApp</option>
-                                        <option value="EMAIL">📧 E-mail</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-7">
-                                    <input type="text" name="anotacao" class="form-control" placeholder="Ex: Cliente prometeu pagar dia 15..." required>
-                                </div>
-                                <div class="col-md-2">
-                                    <button type="submit" name="btn_anotacao" class="btn btn-dark w-100">Salvar</button>
-                                </div>
-                            </div>
-                        </form>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-                        <div class="list-group list-group-flush">
-                            {% for h in historico %}
-                            <div class="list-group-item">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h6 class="mb-1">
-                                        {{ h.get_tipo_display }}
-                                    </h6>
-                                    <small class="text-muted">{{ h.data_hora|date:"d/m/Y H:i" }}</small>
-                                </div>
-                                <p class="mb-1 text-break">{{ h.anotacao }}</p>
-                                <small class="text-muted">Registrado por: {{ h.usuario.username|default:"Sistema" }}</small>
-                            </div>
-                            {% empty %}
-                            <div class="text-center p-3 text-muted">
-                                Nenhum histórico encontrado. Seja o primeiro a registrar!
-                            </div>
-                            {% endfor %}
-                        </div>
+    <script>
+        const valorTotalStr = "{{ t.valor_atualizado }}".replace(',', '.');
+        const valorTotal = parseFloat(valorTotalStr);
 
-                    </div>
-                </div>
-            </div> </div> </div> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        </body>
-        </html>
+        const entradaInput = document.getElementById('entradaInput');
+        const parcelasInput = document.getElementById('parcelasInput');
+        const previewTable = document.getElementById('previewTable');
+
+        function calcular() {
+            let entrada = parseFloat(entradaInput.value) || 0;
+            let qtdParcelas = parseInt(parcelasInput.value) || 1;
+
+            if (entrada > valorTotal) {
+                entrada = valorTotal;
+                entradaInput.value = entrada.toFixed(2);
+            }
+
+            let saldoDevedor = valorTotal - entrada;
+            let valorParcela = 0;
+            
+            if (qtdParcelas > 0) {
+                valorParcela = saldoDevedor / qtdParcelas;
+            }
+
+            let html = '';
+
+            if (entrada > 0) {
+                html += `<tr>
+                    <td class="text-success">🔵 Entrada (Hoje)</td>
+                    <td class="text-end text-success fw-bold">R$ ${entrada.toFixed(2)}</td>
+                </tr>`;
+            }
+
+            if (saldoDevedor > 0.01) {
+                html += `<tr>
+                    <td>📦 Saldo Restante (${qtdParcelas}x)</td>
+                    <td class="text-end fw-bold">R$ ${valorParcela.toFixed(2)} / mês</td>
+                </tr>`;
+            } else if (entrada >= valorTotal) {
+                html += `<tr>
+                    <td colspan="2" class="text-center text-success fw-bold py-3">✨ Pagamento à Vista (Quitação Total)</td>
+                </tr>`;
+            } else {
+                html += `<tr>
+                    <td>📦 Valor Total (${qtdParcelas}x)</td>
+                    <td class="text-end fw-bold">R$ ${valorParcela.toFixed(2)} / mês</td>
+                </tr>`;
+            }
+
+            previewTable.innerHTML = html;
+        }
+
+        entradaInput.addEventListener('input', calcular);
+        parcelasInput.addEventListener('change', calcular);
+        calcular();
+    </script>
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Configuração | Estratégia</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Inter', sans-serif; color: #2c3e50; }
+        
+        .header-title { color: #2c3e50; font-weight: 600; margin-bottom: 0; }
+        
+        /* Timeline Container */
+        .timeline-container {
+            position: relative;
+            padding: 3rem 0;
+            margin-top: 2rem;
+        }
+        /* Linha Central */
+        .timeline-line {
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            width: 80%;
+            height: 2px;
+            background-color: #dce1e6;
+            z-index: 0;
+            transform: translateY(-50%);
+        }
+
+        /* O Cartão do Passo */
+        .step-card {
+            background: #fff;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 1.5rem;
+            width: 280px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            z-index: 1;
+            position: relative;
+        }
+
+        /* O Círculo do Dia */
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            background-color: #fff;
+            border: 2px solid #2c3e50;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0 auto 1rem auto;
+            z-index: 2;
+        }
+
+        .step-title { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #2c3e50; margin-bottom: 0.5rem; }
+        .step-desc { font-size: 0.85rem; color: #7f8c8d; line-height: 1.4; }
+        
+        /* Ícones de Status Sutis */
+        .icon-action { font-size: 1.2rem; margin-right: 8px; vertical-align: middle; }
+
+        .back-btn { color: #7f8c8d; text-decoration: none; font-size: 0.9rem; }
+        .back-btn:hover { color: #2c3e50; }
+    </style>
+</head>
+<body>
+
+    <div class="container py-5">
+        
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h2 class="header-title">Estratégia de Acionamento</h2>
+                <p class="text-muted">Fluxo automatizado de recuperação de crédito</p>
+            </div>
+            <a href="{% url 'dashboard' %}" class="back-btn">← Voltar ao Painel</a>
+        </div>
+
+        <div class="card border-0 shadow-sm p-5">
+            
+            <div class="timeline-container d-flex justify-content-between">
+                <div class="timeline-line"></div>
+
+                <div class="text-center z-1">
+                    <div class="step-circle">5</div>
+                    <div class="step-card">
+                        <div class="step-title">Atraso Leve</div>
+                        <div class="step-desc">
+                            <span class="icon-action">📧</span>
+                            Envio de E-mail com Boleto Atualizado (PDF)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center z-1">
+                    <div class="step-circle">15</div>
+                    <div class="step-card">
+                        <div class="step-title">Atraso Médio</div>
+                        <div class="step-desc">
+                            <span class="icon-action">💬</span>
+                            Disparo de SMS com Link de Negociação
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center z-1">
+                    <div class="step-circle">30</div>
+                    <div class="step-card">
+                        <div class="step-title text-danger">Crítico</div>
+                        <div class="step-desc">
+                            <span class="icon-action">📜</span>
+                            Notificação de Pré-Negativação (Serasa)
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mt-5 pt-4 border-top text-center text-muted small">
+                <p>ℹ️ O motor de processamento <code>(Engine v1.0)</code> executa estas regras diariamente às 08:00. Títulos negociados são removidos automaticamente do fluxo.</p>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,117 +1,273 @@
-    <!DOCTYPE html>
-    <html lang="pt-br">
-    <head>
-        <meta charset="UTF-8">
-        <title>CEDRUS Clone - Dashboard</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        <style>
-            body { background-color: #f8f9fa; }
-            .card-kpi { border: none; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-            .text-money { color: #28a745; font-weight: bold; }
-            .table-hover tbody tr:hover { background-color: #e9ecef; cursor: pointer; }
-        </style>
-    </head>
-    <body>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestão de Cobrança | Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50; /* Azul Noturno (Sóbrio) */
+            --secondary-color: #95a5a6; /* Cinza Concreto */
+            --accent-color: #34495e; /* Azul Petróleo */
+            --bg-body: #f4f6f9; /* Cinza muito suave (Papel) */
+            --text-main: #2c3e50;
+        }
 
-        <nav class="navbar navbar-dark bg-primary mb-4">
-            <div class="container">
-                <span class="navbar-brand mb-0 h1">🚀 Sistema de Cobrança</span>
-                <span class="text-white">Operador: Admin</span>
-            </div>
-        </nav>
+        body { 
+            background-color: var(--bg-body); 
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+        }
 
+        /* Navbar Corporativa */
+        .navbar {
+            background-color: #fff !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-bottom: 1px solid #e1e4e8;
+        }
+        .navbar-brand {
+            color: var(--primary-color) !important;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        /* Cards Profissionais (Sem bordas coloridas, sombra suave) */
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            background: #fff;
+            transition: transform 0.2s;
+        }
+        .card-kpi {
+            border-left: 4px solid var(--primary-color);
+        }
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid #f0f0f0;
+            font-weight: 600;
+            color: var(--primary-color);
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+
+        /* Tipografia de Valores */
+        .kpi-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: var(--secondary-color);
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        .kpi-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-top: 5px;
+        }
+
+        /* Tabela Limpa */
+        .table thead th {
+            background-color: #f8f9fa;
+            color: var(--secondary-color);
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .table td {
+            vertical-align: middle;
+            color: #555;
+            font-size: 0.95rem;
+        }
+        
+        /* Badges Sóbrios */
+        .badge-status-danger { background-color: #fff1f0; color: #e74c3c; border: 1px solid #e74c3c; }
+        .badge-status-success { background-color: #f6ffed; color: #27ae60; border: 1px solid #27ae60; }
+        
+        /* Botões */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .btn-primary:hover {
+            background-color: #1a252f;
+        }
+        .btn-outline-secondary {
+            color: var(--secondary-color);
+            border-color: #dce1e6;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light mb-4">
         <div class="container">
-            
-            <div class="row mb-4">
-                <div class="col-md-4">
-                    <div class="row mb-3">
-        <div class="col-md-12">
-            <form method="GET" action="{% url 'dashboard' %}">
-                <div class="input-group">
-                    <input type="text" name="q" class="form-control form-control-lg" 
-                           placeholder="🔍 Pesquisar por Nome, CPF ou Nosso Número..." 
-                           value="{{ request.GET.q }}">
-                    <button class="btn btn-primary" type="submit">Pesquisar</button>
-                    {% if request.GET.q %}
-                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Limpar</a>
-                    {% endif %}
-                </div>
-            </form>
+            <span class="navbar-brand mb-0 h1">🏢 Sistema de Gestão de Recebíveis</span>
+            <div class="d-flex align-items-center">
+                 <a href="{% url 'regua_visual' %}" class="btn btn-outline-secondary btn-sm me-3">
+                    ⚙️ Estratégia
+                </a>
+                <span class="text-muted small">Logado como: <strong>Admin</strong></span>
+            </div>
         </div>
+    </nav>
+
+    <div class="container">
+        
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card p-3">
+                    <form method="GET" action="{% url 'dashboard' %}" class="row g-2 align-items-center">
+                        <div class="col-md-2">
+                            <select name="status" class="form-select form-select-sm border-0 bg-light fw-bold" style="color: var(--primary-color);">
+                                <option value="ABERTO" {% if status_selecionado == 'ABERTO' %}selected{% endif %}>Em Aberto</option>
+                                <option value="ACORDO" {% if status_selecionado == 'ACORDO' %}selected{% endif %}>Em Acordo</option>
+                                <option value="PAGO" {% if status_selecionado == 'PAGO' %}selected{% endif %}>Baixados</option>
+                                <option value="TUDO" {% if status_selecionado == 'TUDO' %}selected{% endif %}>Todos</option>
+                            </select>
+                        </div>
+                        <div class="col-md-8">
+                            <input type="text" name="q" class="form-control form-control-sm" 
+                                   placeholder="🔍 Buscar por Nome, CPF ou Documento..." 
+                                   value="{{ request.GET.q|default:'' }}">
+                        </div>
+                        <div class="col-md-2 d-grid">
+                            <button class="btn btn-primary btn-sm" type="submit">Filtrar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card card-kpi p-4">
+                    <div class="kpi-label">Carteira Total</div>
+                    <div class="kpi-value">R$ {{ total_receber }}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-4" style="border-left: 4px solid #e67e22;">
+                    <div class="kpi-label">Títulos Ativos</div>
+                    <div class="kpi-value" style="color: #e67e22;">{{ qtd_titulos }}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-4" style="border-left: 4px solid #95a5a6;">
+                    <div class="kpi-label">Clientes na Base</div>
+                    <div class="kpi-value" style="color: #7f8c8d;">{{ qtd_devedores }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card p-4">
+                    <h6 class="card-title mb-4 text-muted text-uppercase small fw-bold">Aging da Carteira (Faixas de Atraso)</h6>
+                    <div style="height: 100px;">
+                        <canvas id="debtAgeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Listagem Analítica</span>
+                <span class="badge bg-light text-dark border">{{ titulos|length }} registros</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Vencimento</th>
+                            <th>Status / Atraso</th>
+                            <th>Cliente</th>
+                            <th>Documento</th>
+                            <th class="text-end">Valor Original</th>
+                            <th class="text-end">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in titulos %}
+                        <tr>
+                            <td class="fw-bold">{{ t.dt_vencimento|date:"d/m/Y" }}</td>
+                            
+                            <td>
+                                {% if t.dias_atraso > 0 %}
+                                    <span class="badge badge-status-danger rounded-pill fw-normal">{{ t.dias_atraso }} dias</span>
+                                {% else %}
+                                    <span class="badge badge-status-success rounded-pill fw-normal">Em dia</span>
+                                {% endif %}
+                            </td>
+                            
+                            <td>
+                                <span class="fw-bold text-dark">{{ t.devedor.nome }}</span><br>
+                                <span class="text-muted small">{{ t.devedor.telefone }}</span>
+                            </td>
+                            <td class="text-muted small">{{ t.numero_doc }}</td>
+                            <td class="text-end">R$ {{ t.valor_original }}</td>
+                            
+                            <td class="text-end">
+                                <a href="{% url 'detalhe_titulo' t.id %}" class="btn btn-sm btn-outline-secondary">Detalhes</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center p-5 text-muted">
+                                <em>Nenhum título encontrado para os filtros aplicados.</em>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
-                    <div class="card card-kpi p-3">
-                        <h6 class="text-muted">Total a Receber</h6>
-                        <h2 class="text-money">R$ {{ total_receber }}</h2>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card card-kpi p-3">
-                        <h6 class="text-muted">Títulos em Aberto</h6>
-                        <h2>{{ qtd_titulos }}</h2>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card card-kpi p-3">
-                        <h6 class="text-muted">Devedores na Base</h6>
-                        <h2>{{ qtd_devedores }}</h2>
-                    </div>
-                </div>
-            </div>
 
-            <div class="card card-kpi">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">📋 Carteira de Cobrança (Prioridade)</h5>
-                </div>
-                <div class="card-body p-0">
-                    <table class="table table-striped table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Vencimento</th>
-                                <th>Dias Atraso</th>
-                                <th>Devedor</th>
-                                <th>Documento</th>
-                                <th>Valor Original</th>
-                                <th>Valor Atualizado</th>
-                                <th>Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for t in titulos %}
-                            <tr>
-                                <td>{{ t.dt_vencimento|date:"d/m/Y" }}</td>
-                                
-                                <td>
-                                    {% if t.dias_atraso > 0 %}
-                                        <span class="badge bg-danger">{{ t.dias_atraso }} dias</span>
-                                    {% else %}
-                                        <span class="badge bg-success">Em dia</span>
-                                    {% endif %}
-                                </td>
-                                
-                                <td>
-                                    <strong>{{ t.devedor.nome }}</strong><br>
-                                    <small class="text-muted">{{ t.devedor.telefone }}</small>
-                                </td>
-                                <td>{{ t.numero_doc }}</td>
-                                <td>R$ {{ t.valor_original }}</td>
-                                
-                                <td class="fw-bold">R$ {{ t.valor_atualizado }}</td>
-                                
-                                <td>
-                                    <a href="{% url 'detalhe_titulo' t.id %}" class="btn btn-sm btn-outline-primary">Negociar</a>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="7" class="text-center p-4">Nenhum título encontrado.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-        </div>
+    <script>
+        const dadosFaixas = {
+            '0-30 dias': {{ faixas_dados.0_30|default:0 }},
+            '31-60 dias': {{ faixas_dados.31_60|default:0 }},
+            '61-90 dias': {{ faixas_dados.61_90|default:0 }},
+            '90+ dias': {{ faixas_dados.90_MAIS|default:0 }},
+        };
 
-    </body>
-    </html>
+        const ctx = document.getElementById('debtAgeChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(dadosFaixas),
+                datasets: [{
+                    data: Object.values(dadosFaixas),
+                    backgroundColor: [
+                        '#27ae60', // Verde
+                        '#f1c40f', // Amarelo
+                        '#e67e22', // Laranja
+                        '#c0392b'  // Vermelho Escuro (Sóbrio)
+                    ],
+                    borderRadius: 4,
+                    barThickness: 40,
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { display: false } },
+                    y: { grid: { display: false } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

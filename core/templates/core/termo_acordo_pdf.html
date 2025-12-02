@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Termo de Confissão de Dívida</title>
+    <style>
+        @page { size: A4; margin: 2.5cm; }
+        body { font-family: "Times New Roman", serif; font-size: 12pt; line-height: 1.5; text-align: justify; }
+        .titulo { text-align: center; font-weight: bold; text-transform: uppercase; margin-bottom: 2cm; }
+        .paragrafo { margin-bottom: 1cm; text-indent: 1cm; }
+        .assinaturas { margin-top: 3cm; display: table; width: 100%; }
+        .coluna { display: table-cell; width: 50%; text-align: center; vertical-align: bottom; }
+        .linha { border-top: 1px solid #000; width: 80%; margin: 0 auto; padding-top: 5px; }
+        
+        /* Botão não sai na impressão */
+        @media print { .no-print { display: none; } }
+        .btn-print { padding: 10px 20px; background: #28a745; color: white; border: none; cursor: pointer; font-size: 16px; border-radius: 5px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <div style="text-align: center;" class="no-print">
+        <button onclick="window.print()" class="btn-print">🖨️ Imprimir Termo</button>
+    </div>
+
+    <div class="titulo">INSTRUMENTO PARTICULAR DE CONFISSÃO DE DÍVIDA</div>
+
+    <div class="paragrafo">
+        Pelo presente instrumento particular, <strong>{{ t.devedor.nome }}</strong>, inscrito(a) no CPF/CNPJ sob o nº {{ t.devedor.cpf_cnpj }}, residente e domiciliado(a) em {{ t.devedor.logradouro }}, {{ t.devedor.numero }}, {{ t.devedor.cidade }}-{{ t.devedor.uf }}, doravante denominado(a) <strong>DEVEDOR(A)</strong>,
+    </div>
+
+    <div class="paragrafo">
+        Reconhece e confessa dever à <strong>{{ empresa_nome }}</strong>, inscrita no CNPJ sob o nº {{ empresa_cnpj }}, doravante denominada <strong>CREDORA</strong>, a importância líquida e certa de <strong>R$ {{ t.valor_atualizado }}</strong>, referente ao título nº {{ t.numero_doc }} vencido em {{ t.dt_vencimento|date:"d/m/Y" }}.
+    </div>
+
+    <div class="paragrafo">
+        O DEVEDOR compromete-se a liquidar a dívida acima descrita mediante pagamento de boleto bancário anexo, com vencimento para <strong>{{ data_atual|date:"d/m/Y" }}</strong>, dando plena quitação após a compensação do mesmo.
+    </div>
+
+    <div class="paragrafo">
+        O não pagamento da obrigação na data estipulada acarretará o vencimento antecipado da dívida, sujeitando o DEVEDOR às medidas judiciais e extrajudiciais cabíveis, bem como à inscrição nos órgãos de proteção ao crédito.
+    </div>
+
+    <div class="paragrafo" style="margin-top: 2cm; text-align: center;">
+        {{ t.devedor.cidade }} - {{ t.devedor.uf }}, {{ data_atual|date:"d F Y" }}.
+    </div>
+
+    <div class="assinaturas">
+        <div class="coluna">
+            <div class="linha">{{ t.devedor.nome }}<br>DEVEDOR</div>
+        </div>
+        <div class="coluna">
+            <div class="linha">{{ empresa_nome }}<br>CREDOR</div>
+        </div>
+    </div>
+
+</body>
+</html>

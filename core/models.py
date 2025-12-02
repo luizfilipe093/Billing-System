@@ -2,6 +2,7 @@ from django.db import models
 from datetime import date
 from decimal import Decimal
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 
 class Devedor(models.Model):
     codigo_externo = models.CharField("Cód. Devedor", max_length=50, unique=True)
@@ -19,6 +20,39 @@ class Devedor(models.Model):
 
     def __str__(self):
         return f"{self.nome} ({self.codigo_externo})"
+
+class ConfiguracaoFinanceira(models.Model):
+    multa_percentual = models.DecimalField(
+        "Multa (%) por Atraso",
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal('2.00'),
+        help_text="Valor percentual da multa (ex: 2.00 para 2%)."
+    )
+    juros_mensal_percentual = models.DecimalField(
+        "Juros (%) ao Mês",
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal('1.00'),
+        help_text="Valor percentual dos juros ao mês (ex: 1.00 para 1%)."
+    )
+
+    class Meta:
+        verbose_name = "Configuração Financeira"
+        verbose_name_plural = "Configurações Financeiras"
+
+    # Garante que só haja um registro (Singleton Pattern)
+    def clean(self):
+        if ConfiguracaoFinanceira.objects.exists() and self.pk is None:
+            raise ValidationError("Só pode existir uma configuração financeira.")
+        super().clean()
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return "Regras Ativas do Sistema"
 
 class Titulo(models.Model):
     STATUS_CHOICES = [
@@ -39,8 +73,6 @@ class Titulo(models.Model):
     def __str__(self):
         return f"Doc: {self.numero_doc} - R$ {self.valor_original}"
 
-    # === A MÁGICA DA ENGENHARIA COMEÇA AQUI ===
-
     @property
     def dias_atraso(self):
         """Retorna quantos dias o título está vencido"""
@@ -54,20 +86,33 @@ class Titulo(models.Model):
 
     @property
     def valor_atualizado(self):
-        """Calcula: Valor + Multa (2%) + Juros (0.033% ao dia = 1% ao mês)"""
+        """Calcula o Valor Atualizado lendo as regras da Configuração."""
         if self.dias_atraso <= 0:
             return self.valor_original
+
+        # 1. Busca as regras ativas no banco (Singleton)
+        try:
+            regras = ConfiguracaoFinanceira.objects.first()
+        except:
+            # Fallback seguro caso o banco ainda não tenha sido populado/migrado
+            # Usa valores padrão: Multa 2% e Juros 1%
+            multa_taxa = Decimal('0.02')
+            juros_taxa_diaria = (Decimal('1.00') / 100) / 30
+        else:
+            if regras:
+                multa_taxa = regras.multa_percentual / 100
+                juros_taxa_diaria = (regras.juros_mensal_percentual / 100) / 30
+            else:
+                 multa_taxa = Decimal('0.02')
+                 juros_taxa_diaria = (Decimal('1.00') / 100) / 30
         
-        # Multa de 2%
-        multa = self.valor_original * Decimal('0.02')
-        
-        # Juros Simples (0.0333% ao dia)
-        taxa_juros_dia = Decimal('0.01') / 30 
-        juros = self.valor_original * taxa_juros_dia * self.dias_atraso
-        
+        # Aplica o cálculo
+        multa = self.valor_original * multa_taxa
+        juros = self.valor_original * juros_taxa_diaria * self.dias_atraso
+
         total = self.valor_original + multa + juros
         return round(total, 2)
-        
+
 class HistoricoContato(models.Model):
     TIPO_CHOICES = [
         ('LIGACAO', '📞 Ligação'),
