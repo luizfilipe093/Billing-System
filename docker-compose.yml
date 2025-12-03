@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    # Mapeia a porta 8000 do container para a 8000 do seu PC
+    ports:
+      - "8000:8000"
+    # Lê as senhas do seu arquivo local .env
+    env_file:
+      - .env
+    # Garante que reinicie se der erro
+    restart: always
+    # --- CORREÇÃO DA REDE AQUI ---
+    # Força o container a desligar IPv6 e usar apenas IPv4
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+      - net.ipv6.conf.default.disable_ipv6=1

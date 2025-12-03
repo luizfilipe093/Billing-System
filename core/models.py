@@ -9,6 +9,7 @@ class Devedor(models.Model):
     nome = models.CharField(max_length=255)
     tipo_pessoa = models.CharField("Tipo Pessoa", max_length=20, null=True, blank=True)
     cpf_cnpj = models.CharField("CPF/CNPJ", max_length=20, null=True, blank=True)
+    pessoa_contato = models.CharField("Pessoa de Contato", max_length=100, null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
     telefone = models.CharField(max_length=50, null=True, blank=True)
     logradouro = models.CharField(max_length=255, null=True, blank=True)

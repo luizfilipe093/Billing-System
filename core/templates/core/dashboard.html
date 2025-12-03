@@ -2,271 +2,270 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Gestão de Cobrança | Dashboard</title>
+    <title>Gestão de Recebíveis | Painel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         :root {
-            --primary-color: #2c3e50; /* Azul Noturno (Sóbrio) */
-            --secondary-color: #95a5a6; /* Cinza Concreto */
-            --accent-color: #34495e; /* Azul Petróleo */
-            --bg-body: #f4f6f9; /* Cinza muito suave (Papel) */
+            --primary-color: #2c3e50; /* Navy */
+            --secondary-color: #95a5a6; /* Slate */
+            --bg-body: #f4f6f9;
             --text-main: #2c3e50;
         }
+        body { background-color: var(--bg-body); font-family: 'Inter', sans-serif; color: var(--text-main); }
 
-        body { 
-            background-color: var(--bg-body); 
-            font-family: 'Inter', sans-serif;
-            color: var(--text-main);
-        }
+        /* Navbar */
+        .navbar { background-color: #fff; border-bottom: 1px solid #e1e4e8; box-shadow: 0 2px 4px rgba(0,0,0,0.02); padding: 0.8rem 0; }
+        .navbar-brand { color: var(--primary-color) !important; font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px; text-transform: uppercase; }
+        .nav-link { color: #555 !important; font-weight: 500; font-size: 0.9rem; margin-right: 20px; }
+        .nav-link:hover { color: var(--primary-color) !important; }
 
-        /* Navbar Corporativa */
-        .navbar {
-            background-color: #fff !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            border-bottom: 1px solid #e1e4e8;
-        }
-        .navbar-brand {
-            color: var(--primary-color) !important;
-            font-weight: 600;
-            letter-spacing: -0.5px;
-        }
+        /* Header Operador */
+        .operador-section { display: flex; justify-content: space-between; align-items: center; margin: 2.5rem 0 2rem 0; }
+        .operador-title { font-size: 1.8rem; font-weight: 300; color: #333; margin: 0; }
+        .btn-action { background-color: var(--primary-color); color: white; border: none; padding: 10px 25px; font-weight: 600; border-radius: 4px; font-size: 0.9rem; }
+        .btn-action:hover { background-color: #1a252f; color: white; transform: translateY(-1px); }
 
-        /* Cards Profissionais (Sem bordas coloridas, sombra suave) */
-        .card {
-            border: none;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            background: #fff;
-            transition: transform 0.2s;
-        }
-        .card-kpi {
-            border-left: 4px solid var(--primary-color);
-        }
-        .card-header {
-            background-color: #fff;
-            border-bottom: 1px solid #f0f0f0;
-            font-weight: 600;
-            color: var(--primary-color);
-            padding-top: 1rem;
-            padding-bottom: 1rem;
-        }
-
-        /* Tipografia de Valores */
-        .kpi-label {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            color: var(--secondary-color);
-            letter-spacing: 1px;
-            font-weight: 600;
-        }
-        .kpi-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-top: 5px;
-        }
-
-        /* Tabela Limpa */
-        .table thead th {
-            background-color: #f8f9fa;
-            color: var(--secondary-color);
-            font-weight: 600;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            border-bottom: 2px solid #e9ecef;
-        }
-        .table td {
-            vertical-align: middle;
-            color: #555;
-            font-size: 0.95rem;
-        }
+        /* Scorecards */
+        .scorecard { background: #fff; border: 1px solid #e1e4e8; border-radius: 6px; display: flex; margin-bottom: 1.5rem; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.01); }
+        .scorecard-header { background-color: #f8f9fa; border-right: 1px solid #e1e4e8; width: 100px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--secondary-color); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; padding: 1rem; }
+        .scorecard-body { flex-grow: 1; display: flex; justify-content: space-around; align-items: center; padding: 1.2rem 0; }
         
-        /* Badges Sóbrios */
-        .badge-status-danger { background-color: #fff1f0; color: #e74c3c; border: 1px solid #e74c3c; }
-        .badge-status-success { background-color: #f6ffed; color: #27ae60; border: 1px solid #27ae60; }
+        .stat-block { text-align: center; border-right: 1px solid #f0f0f0; flex-grow: 1; }
+        .stat-block:last-child { border-right: none; }
+        .stat-num { font-size: 1.6rem; font-weight: 700; color: var(--primary-color); line-height: 1.2; display: block; }
+        .stat-desc { font-size: 0.7rem; color: #888; text-transform: uppercase; margin-top: 6px; display: block; font-weight: 600; }
+
+        /* Gráficos */
+        .chart-card { background: #fff; border: 1px solid #e1e4e8; border-radius: 6px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .chart-title { font-size: 0.9rem; font-weight: 700; color: var(--secondary-color); margin-bottom: 1.5rem; text-align: center; text-transform: uppercase; letter-spacing: 0.5px; }
         
-        /* Botões */
-        .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-        .btn-primary:hover {
-            background-color: #1a252f;
-        }
-        .btn-outline-secondary {
-            color: var(--secondary-color);
-            border-color: #dce1e6;
-        }
+        /* Modal */
+        .modal-fullscreen-custom { max-width: 96%; width: 96%; margin: 1rem auto; }
+        .modal-content { height: 92vh; border: none; border-radius: 8px; overflow: hidden; }
+        .modal-header { background-color: var(--primary-color); color: white; padding: 12px 25px; }
+        iframe { width: 100%; height: 100%; border: none; background-color: #f4f6f9; }
+        
+        .search-input { border-radius: 20px 0 0 20px; border: 1px solid #dce1e6; padding-left: 15px; }
+        .search-btn { border-radius: 0 20px 20px 0; background-color: #e9ecef; border: 1px solid #dce1e6; color: #555; }
     </style>
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-light mb-4">
+    <nav class="navbar navbar-expand-lg">
         <div class="container">
-            <span class="navbar-brand mb-0 h1">🏢 Sistema de Gestão de Recebíveis</span>
-            <div class="d-flex align-items-center">
-                 <a href="{% url 'regua_visual' %}" class="btn btn-outline-secondary btn-sm me-3">
-                    ⚙️ Estratégia
-                </a>
-                <span class="text-muted small">Logado como: <strong>Admin</strong></span>
+            <a class="navbar-brand" href="#">Gestão de Cobrança</a>
+            <div class="collapse navbar-collapse justify-content-end">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="#">Operacional</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'regua_visual' %}">Estratégia</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'importar_arquivo' %}">Dados</a></li>
+                    <li class="nav-item"><span class="nav-link fw-bold text-dark">Admin</span></li>
+                </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container">
+    <div class="container py-4">
         
-        <div class="row mb-4">
-            <div class="col-md-12">
-                <div class="card p-3">
-                    <form method="GET" action="{% url 'dashboard' %}" class="row g-2 align-items-center">
-                        <div class="col-md-2">
-                            <select name="status" class="form-select form-select-sm border-0 bg-light fw-bold" style="color: var(--primary-color);">
-                                <option value="ABERTO" {% if status_selecionado == 'ABERTO' %}selected{% endif %}>Em Aberto</option>
-                                <option value="ACORDO" {% if status_selecionado == 'ACORDO' %}selected{% endif %}>Em Acordo</option>
-                                <option value="PAGO" {% if status_selecionado == 'PAGO' %}selected{% endif %}>Baixados</option>
-                                <option value="TUDO" {% if status_selecionado == 'TUDO' %}selected{% endif %}>Todos</option>
-                            </select>
-                        </div>
-                        <div class="col-md-8">
-                            <input type="text" name="q" class="form-control form-control-sm" 
-                                   placeholder="🔍 Buscar por Nome, CPF ou Documento..." 
-                                   value="{{ request.GET.q|default:'' }}">
-                        </div>
-                        <div class="col-md-2 d-grid">
-                            <button class="btn btn-primary btn-sm" type="submit">Filtrar</button>
-                        </div>
-                    </form>
-                </div>
+        <div class="operador-section">
+            <div>
+                <h1 class="operador-title">Painel do Operador</h1>
+                <p class="text-muted small mb-0">Performance em Tempo Real</p>
             </div>
+            {% if proximo_id %}
+                <button onclick="abrirNegociacao('{% url 'detalhe_titulo' proximo_id %}', '{{ nome_proximo }}')" 
+                        class="btn btn-action shadow-sm">
+                    📞 Iniciar Atendimento
+                </button>
+            {% else %}
+                <button disabled class="btn btn-secondary opacity-50">Sem Pendências</button>
+            {% endif %}
         </div>
 
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card card-kpi p-4">
-                    <div class="kpi-label">Carteira Total</div>
-                    <div class="kpi-value">R$ {{ total_receber }}</div>
+        <div class="row">
+            <div class="col-12">
+                <div class="scorecard">
+                    <div class="scorecard-header">Hoje</div>
+                    <div class="scorecard-body">
+                        <div class="stat-block"><span class="stat-num">{{ qtd_hoje }}</span><span class="stat-desc">Contatos</span></div>
+                        <div class="stat-block"><span class="stat-num">{{ positivos_hoje }}</span><span class="stat-desc">Efetivos</span></div>
+                        <div class="stat-block"><span class="stat-num">{{ taxa_hoje }}%</span><span class="stat-desc">Conversão</span></div>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card p-4" style="border-left: 4px solid #e67e22;">
-                    <div class="kpi-label">Títulos Ativos</div>
-                    <div class="kpi-value" style="color: #e67e22;">{{ qtd_titulos }}</div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card p-4" style="border-left: 4px solid #95a5a6;">
-                    <div class="kpi-label">Clientes na Base</div>
-                    <div class="kpi-value" style="color: #7f8c8d;">{{ qtd_devedores }}</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row mb-4">
-            <div class="col-md-12">
-                <div class="card p-4">
-                    <h6 class="card-title mb-4 text-muted text-uppercase small fw-bold">Aging da Carteira (Faixas de Atraso)</h6>
-                    <div style="height: 100px;">
-                        <canvas id="debtAgeChart"></canvas>
+            <div class="col-12">
+                <div class="scorecard">
+                    <div class="scorecard-header">Carteira</div>
+                    <div class="scorecard-body">
+                        <div class="stat-block"><span class="stat-num">{{ agendados_hoje }}</span><span class="stat-desc">Vencendo Hoje</span></div>
+                        <div class="stat-block"><span class="stat-num">{{ qtd_titulos }}</span><span class="stat-desc">Total Títulos</span></div>
+                        <div class="stat-block"><span class="stat-num text-success" style="color: #27ae60;">R$ {{ total_receber|floatformat:0 }}</span><span class="stat-desc">Saldo Aberto</span></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span>Listagem Analítica</span>
-                <span class="badge bg-light text-dark border">{{ titulos|length }} registros</span>
+        <div class="chart-card">
+            <h3 class="chart-title">Distribuição da Dívida por Atraso (Aging)</h3>
+            <div style="height: 120px;">
+                <canvas id="agingChart"></canvas>
             </div>
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>Vencimento</th>
-                            <th>Status / Atraso</th>
-                            <th>Cliente</th>
-                            <th>Documento</th>
-                            <th class="text-end">Valor Original</th>
-                            <th class="text-end">Ação</th>
-                        </tr>
+        </div>
+
+        <div class="chart-card">
+            <h3 class="chart-title">Volume de Acionamentos (7 dias)</h3>
+            <div style="height: 200px;">
+                <canvas id="lineChart"></canvas>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-card">
+                    <h3 class="chart-title">Resultado (Hoje)</h3>
+                    <div style="height: 200px; display: flex; justify-content: center;">
+                        <canvas id="donutChart1"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-card">
+                    <h3 class="chart-title">Canais Utilizados</h3>
+                    <div style="height: 200px; display: flex; justify-content: center;">
+                        <canvas id="donutChart2"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 mb-5 bg-transparent">
+            <div class="d-flex justify-content-center">
+                <form method="GET" class="d-flex w-50">
+                    <input type="text" name="q" class="form-control search-input" placeholder="Localizar cliente..." value="{{ request.GET.q|default:'' }}">
+                    <button class="btn search-btn" type="submit">🔍</button>
+                </form>
+            </div>
+            
+            {% if titulos %}
+            <div class="card mt-3 border shadow-sm">
+                <table class="table table-hover mb-0 small">
+                    <thead class="bg-light text-uppercase text-muted">
+                        <tr><th class="ps-4">Cliente</th><th>Valor</th><th class="text-end pe-4">Ação</th></tr>
                     </thead>
                     <tbody>
                         {% for t in titulos %}
                         <tr>
-                            <td class="fw-bold">{{ t.dt_vencimento|date:"d/m/Y" }}</td>
-                            
-                            <td>
-                                {% if t.dias_atraso > 0 %}
-                                    <span class="badge badge-status-danger rounded-pill fw-normal">{{ t.dias_atraso }} dias</span>
-                                {% else %}
-                                    <span class="badge badge-status-success rounded-pill fw-normal">Em dia</span>
-                                {% endif %}
-                            </td>
-                            
-                            <td>
-                                <span class="fw-bold text-dark">{{ t.devedor.nome }}</span><br>
-                                <span class="text-muted small">{{ t.devedor.telefone }}</span>
-                            </td>
-                            <td class="text-muted small">{{ t.numero_doc }}</td>
-                            <td class="text-end">R$ {{ t.valor_original }}</td>
-                            
-                            <td class="text-end">
-                                <a href="{% url 'detalhe_titulo' t.id %}" class="btn btn-sm btn-outline-secondary">Detalhes</a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="6" class="text-center p-5 text-muted">
-                                <em>Nenhum título encontrado para os filtros aplicados.</em>
+                            <td class="ps-4 fw-bold">{{ t.devedor.nome }}</td>
+                            <td>R$ {{ t.valor_atualizado }}</td>
+                            <td class="text-end pe-4">
+                                <button onclick="abrirNegociacao('{% url 'detalhe_titulo' t.id %}', '{{ t.devedor.nome }}')" 
+                                        class="btn btn-sm btn-outline-primary fw-bold">Abrir Ficha</button>
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
+            {% endif %}
         </div>
 
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <div class="modal fade" id="janelaNegociacao" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-fullscreen-custom">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-white" id="tituloJanela">Atendimento</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <iframe name="frameNegociacao" id="frameNegociacao" src=""></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const dadosFaixas = {
+        // Cores
+        const colors = { primary: '#2c3e50', accent: '#95a5a6', success: '#27ae60', danger: '#c0392b', warning: '#f39c12' };
+
+        // 1. Gráfico de Aging (Barras)
+        const agingData = {
             '0-30 dias': {{ faixas_dados.0_30|default:0 }},
             '31-60 dias': {{ faixas_dados.31_60|default:0 }},
             '61-90 dias': {{ faixas_dados.61_90|default:0 }},
             '90+ dias': {{ faixas_dados.90_MAIS|default:0 }},
         };
-
-        const ctx = document.getElementById('debtAgeChart').getContext('2d');
-        new Chart(ctx, {
+        new Chart(document.getElementById('agingChart'), {
             type: 'bar',
             data: {
-                labels: Object.keys(dadosFaixas),
+                labels: Object.keys(agingData),
                 datasets: [{
-                    data: Object.values(dadosFaixas),
-                    backgroundColor: [
-                        '#27ae60', // Verde
-                        '#f1c40f', // Amarelo
-                        '#e67e22', // Laranja
-                        '#c0392b'  // Vermelho Escuro (Sóbrio)
-                    ],
-                    borderRadius: 4,
-                    barThickness: 40,
+                    data: Object.values(agingData),
+                    backgroundColor: [colors.success, colors.warning, colors.warning, colors.danger],
+                    borderRadius: 4, barThickness: 30
                 }]
             },
             options: {
-                indexAxis: 'y',
-                responsive: true,
-                maintainAspectRatio: false,
+                indexAxis: 'y', responsive: true, maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
-                scales: {
-                    x: { grid: { display: false }, ticks: { display: false } },
-                    y: { grid: { display: false } }
-                }
+                scales: { x: { display: false }, y: { grid: { display: false } } }
             }
+        });
+
+        // 2. Mapa de Contatos (Linha)
+        const lineLabels = {{ line_labels|safe }};
+        const lineData = {{ line_data|safe }};
+        if(lineLabels.length > 0) {
+            new Chart(document.getElementById('lineChart'), {
+                type: 'line',
+                data: {
+                    labels: lineLabels,
+                    datasets: [{
+                        label: 'Contatos', data: lineData,
+                        borderColor: colors.primary, backgroundColor: 'rgba(44, 62, 80, 0.05)',
+                        tension: 0.3, fill: true, pointRadius: 4, pointBackgroundColor: colors.primary
+                    }]
+                },
+                options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#f0f0f0' } }, x: { grid: { display: false } } } }
+            });
+        }
+
+        // 3. Donut Charts
+        const donutLabels = {{ donut_labels|safe }};
+        const donutData = {{ donut_data|safe }};
+        const donutConfig = {
+            type: 'doughnut',
+            data: {
+                labels: donutLabels,
+                datasets: [{
+                    data: donutData,
+                    backgroundColor: [colors.primary, colors.success, colors.accent, colors.danger],
+                    borderWidth: 0, cutout: '70%'
+                }]
+            },
+            options: { plugins: { legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 8 } } } }
+        };
+
+        if(donutLabels.length > 0) {
+            new Chart(document.getElementById('donutChart1'), donutConfig); // Resultado (placeholder)
+            new Chart(document.getElementById('donutChart2'), donutConfig); // Tabulação
+        }
+
+        // Modal Logic
+        function abrirNegociacao(url, nome) {
+            document.getElementById('tituloJanela').innerText = "Atendendo: " + nome;
+            document.getElementById('frameNegociacao').src = url;
+            var myModal = new bootstrap.Modal(document.getElementById('janelaNegociacao'));
+            myModal.show();
+        }
+        
+        document.getElementById('janelaNegociacao').addEventListener('hidden.bs.modal', function () {
+            location.reload();
         });
     </script>
 </body>
