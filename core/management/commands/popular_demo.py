@@ -4,131 +4,137 @@ from datetime import date, timedelta
 import random
 
 class Command(BaseCommand):
-    help = 'Cria dados de cinema para a apresentação (Cenografia)'
+    help = 'Popula o banco de dados com dados cenográficos para a apresentação (Aging List calibrado)'
 
     def handle(self, *args, **options):
-        self.stdout.write("🎬 Iniciando Cenografia para a Demo...")
+        self.stdout.write(self.style.WARNING("--- 🎬 INICIANDO CENOGRAFIA PARA O 'DIA D' ---"))
+        
+        # 1. LIMPEZA CIRÚRGICA
+        # Removemos apenas os dados da demo para não duplicar se rodar 2 vezes
+        nomes_demo = ["Transportadora Veloz S.A.", "Supermercado Aliança", "Farmácia Saúde Total", "Oficina do Pedro"]
+        Devedor.objects.filter(nome__in=nomes_demo).delete()
+        self.stdout.write("✓ Dados antigos da demo removidos.")
 
-        # Nota: Não vamos apagar seus dados reais. Vamos apenas ADICIONAR estes casos.
-        # Eles terão códigos 'DEMO' para você identificar fácil.
+        # 2. CRIANDO OS ATORES (DEVEDORES)
+        
+        # A) O Caso Crítico (Para o Alerta Vermelho)
+        transportadora = Devedor.objects.create(
+            codigo_externo="DEMO-01",
+            nome="Transportadora Veloz S.A.",
+            tipo_pessoa="J",
+            cpf_cnpj="12.345.678/0001-99",
+            email="financeiro@veloz.com.br",
+            telefone="(11) 99999-1234",
+            cidade="São Paulo",
+            uf="SP",
+            logradouro="Rodovia Anhanguera, km 15",
+            status='ATIVO'
+        )
 
-        # ---------------------------------------------------------
-        # CASO 1: O CRÍTICO (Para mostrar o Gráfico Vermelho e Alerta)
-        # ---------------------------------------------------------
-        dev1, _ = Devedor.objects.get_or_create(
-            codigo_externo='DEMO-001',
-            defaults={
-                'nome': 'TRANSPORTADORA VELOZ LTDA',
-                'cpf_cnpj': '12.345.678/0001-99',
-                'email': 'financeiro@veloz.com.br',
-                'telefone': '(11) 99999-1111',
-                'logradouro': 'Rodovia Anhanguera, KM 30',
-                'numero': 'S/N',
-                'bairro': 'Industrial',
-                'cidade': 'São Paulo', 'uf': 'SP', 'cep': '05000-000'
-            }
+        # B) O Caso Médio (Para Negociação)
+        mercado = Devedor.objects.create(
+            codigo_externo="DEMO-02",
+            nome="Supermercado Aliança",
+            tipo_pessoa="J",
+            cpf_cnpj="98.765.432/0001-11",
+            email="compras@alianca.com",
+            telefone="(21) 98888-5678",
+            cidade="Rio de Janeiro",
+            uf="RJ",
+            logradouro="Av. Atlântica, 1500",
+            status='ATIVO'
         )
-        
-        # Título de 45 mil, vencido há 95 dias (Barra Vermelha no BI)
-        Titulo.objects.get_or_create(
-            codigo_titulo_externo='TIT-CRI-001',
-            defaults={
-                'devedor': dev1,
-                'numero_doc': 'NF-5501',
-                'dt_vencimento': date.today() - timedelta(days=95), 
-                'dt_emissao': date.today() - timedelta(days=120),
-                'valor_original': 45000.00,
-                'saldo_atual': 45000.00,
-                'status': 'ABERTO'
-            }
-        )
-        self.stdout.write(self.style.ERROR(f"🔴 Criado caso Crítico (95 dias): {dev1.nome}"))
 
-        # ---------------------------------------------------------
-        # CASO 2: A NEGOCIAÇÃO (Para você operar ao vivo)
-        # ---------------------------------------------------------
-        dev2, _ = Devedor.objects.get_or_create(
-            codigo_externo='DEMO-002',
-            defaults={
-                'nome': 'SUPERMERCADO ALIANÇA S.A.',
-                'cpf_cnpj': '98.765.432/0001-00',
-                'email': 'contas@alianca.com.br', 
-                'telefone': '(11) 98888-2222',
-                'logradouro': 'Av. das Nações',
-                'numero': '1000',
-                'bairro': 'Centro',
-                'cidade': 'Campinas', 'uf': 'SP', 'cep': '13000-000'
-            }
+        # C) O Caso Recente
+        oficina = Devedor.objects.create(
+            codigo_externo="DEMO-03",
+            nome="Oficina do Pedro",
+            tipo_pessoa="F",
+            cpf_cnpj="123.456.789-00",
+            telefone="(31) 97777-4444",
+            cidade="Belo Horizonte",
+            uf="MG",
+            logradouro="Rua das Chaves, 40",
+            status='ATIVO'
         )
-        
-        # Título de 5.200, vencido há 15 dias (Ideal para simular parcelamento)
-        t2, _ = Titulo.objects.get_or_create(
-            codigo_titulo_externo='TIT-NEG-001',
-            defaults={
-                'devedor': dev2,
-                'numero_doc': 'NF-1020',
-                'dt_vencimento': date.today() - timedelta(days=15),
-                'dt_emissao': date.today() - timedelta(days=45),
-                'valor_original': 5200.00,
-                'saldo_atual': 5200.00,
-                'status': 'ABERTO'
-            }
-        )
-        
-        # Adiciona um histórico para dar contexto na tela
-        if not HistoricoContato.objects.filter(titulo=t2).exists():
-            HistoricoContato.objects.create(
-                titulo=t2,
-                tipo='LIGACAO',
-                anotacao="Cliente atendeu. Alegou problema de fluxo de caixa. Pediu para retornar hoje com proposta de parcelamento.",
-                usuario=None # Sistema
-            )
-        self.stdout.write(self.style.WARNING(f"🟡 Criado caso Negociação (15 dias): {dev2.nome}"))
 
-        # ---------------------------------------------------------
-        # CASO 3: O SUCESSO (Para mostrar KPIs verdes e Acordos)
-        # ---------------------------------------------------------
-        dev3, _ = Devedor.objects.get_or_create(
-            codigo_externo='DEMO-003',
-            defaults={
-                'nome': 'FARMÁCIA SAÚDE TOTAL',
-                'cpf_cnpj': '11.111.111/0001-11',
-                'email': 'pagar@saude.com',
-                'telefone': '(11) 97777-3333',
-                'logradouro': 'Rua da Saúde',
-                'numero': '10',
-                'bairro': 'Jardim',
-                'cidade': 'Jundiaí', 'uf': 'SP', 'cep': '13200-000'
-            }
+        # D) O Bom Pagador
+        farmacia = Devedor.objects.create(
+            codigo_externo="DEMO-04",
+            nome="Farmácia Saúde Total",
+            tipo_pessoa="J",
+            cpf_cnpj="11.222.333/0001-00",
+            telefone="(41) 3333-2222",
+            cidade="Curitiba",
+            uf="PR",
+            logradouro="Rua das Flores, 100",
+            status='ATIVO'
         )
-        
-        # Título original que já foi negociado
-        Titulo.objects.get_or_create(
-            codigo_titulo_externo='TIT-SUC-001',
-            defaults={
-                'devedor': dev3,
-                'numero_doc': 'NF-0033',
-                'dt_vencimento': date.today() - timedelta(days=60),
-                'dt_emissao': date.today() - timedelta(days=90),
-                'valor_original': 2500.00,
-                'saldo_atual': 0.00, 
-                'status': 'ACORDO' # Já aparece como resolvido
-            }
+
+        self.stdout.write("✓ Devedores criados.")
+
+        # 3. INJETANDO TÍTULOS (A MÁGICA DO AGING)
+        # Aqui definimos datas exatas para cair em cada faixa do gráfico
+        hoje = date.today()
+
+        # FAIXA VERMELHA (> 90 dias)
+        # Vencido há 120 dias
+        Titulo.objects.create(
+            devedor=transportadora,
+            codigo_titulo_externo="TIT-VELOZ-01",
+            numero_doc="NF-1001",
+            dt_emissao=hoje - timedelta(days=150),
+            dt_vencimento=hoje - timedelta(days=120), 
+            valor_original=15000.00,
+            saldo_atual=15000.00, 
+            status='ABERTO'
         )
-        
-        # Cria o boleto da entrada (que foi gerado no acordo)
-        Titulo.objects.get_or_create(
-            codigo_titulo_externo='TIT-SUC-ENT',
-            defaults={
-                'devedor': dev3,
-                'numero_doc': 'NF-0033/ENT',
-                'dt_vencimento': date.today(),
-                'dt_emissao': date.today(),
-                'valor_original': 500.00,
-                'saldo_atual': 500.00,
-                'status': 'ABERTO'
-            }
+        # Adiciona um histórico para o gráfico de linha não ficar vazio
+        HistoricoContato.objects.create(
+            titulo=Titulo.objects.get(codigo_titulo_externo="TIT-VELOZ-01"),
+            data_hora=hoje - timedelta(days=5),
+            tipo="EMAIL",
+            anotacao="Cobrança automática enviada. Cliente visualizou mas não respondeu."
         )
-        
-        self.stdout.write(self.style.SUCCESS(f"🟢 Criado caso Sucesso (Acordo): {dev3.nome}"))
-        self.stdout.write("\n🎬 CENÁRIO PRONTO! Boa sorte na apresentação.")
+
+        # FAIXA AMARELA (30 a 60 dias)
+        # Vencido há 45 dias
+        Titulo.objects.create(
+            devedor=mercado,
+            codigo_titulo_externo="TIT-MERCADO-01",
+            numero_doc="NF-2050",
+            dt_emissao=hoje - timedelta(days=60),
+            dt_vencimento=hoje - timedelta(days=45),
+            valor_original=5500.00,
+            saldo_atual=5500.00,
+            status='ABERTO'
+        )
+
+        # FAIXA AZUL (Até 30 dias)
+        # Vencido há 10 dias
+        Titulo.objects.create(
+            devedor=oficina,
+            codigo_titulo_externo="TIT-OFICINA-01",
+            numero_doc="NF-3005",
+            dt_emissao=hoje - timedelta(days=20),
+            dt_vencimento=hoje - timedelta(days=10),
+            valor_original=1200.00,
+            saldo_atual=1200.00,
+            status='ABERTO'
+        )
+
+        # FAIXA VERDE (A Vencer)
+        # Vence daqui a 5 dias
+        Titulo.objects.create(
+            devedor=farmacia,
+            codigo_titulo_externo="TIT-FARMA-01",
+            numero_doc="NF-4000",
+            dt_emissao=hoje - timedelta(days=5),
+            dt_vencimento=hoje + timedelta(days=5),
+            valor_original=8000.00,
+            saldo_atual=8000.00,
+            status='ABERTO'
+        )
+
+        self.stdout.write(self.style.SUCCESS("--- SUCESSO! DADOS DO 'DIA D' INJETADOS ---"))
+        self.stdout.write(self.style.SUCCESS("⚠️  AÇÃO NECESSÁRIA: Dê F5 no Dashboard para ver o gráfico colorido."))

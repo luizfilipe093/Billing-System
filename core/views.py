@@ -1,15 +1,10 @@
-from django.shortcuts import render, get_object_or_404
-from django.db.models import Sum, Q
-from .models import Titulo, Devedor, HistoricoContato, ConfiguracaoFinanceira
-from datetime import date, timedelta
-import pandas as pd
-from django.contrib import messages
-
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Sum, Q, Count
 from django.db.models.functions import TruncDate
 from .models import Titulo, Devedor, HistoricoContato
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime # Adicionado datetime aqui para corrigir erro no import
+import pandas as pd
+from django.contrib import messages
 
 def dashboard(request):
     # --- 1. DADOS GERAIS ---
@@ -17,40 +12,53 @@ def dashboard(request):
     qtd_titulos = Titulo.objects.filter(status='ABERTO').count()
     
     # --- 2. LÓGICA DE PRÓXIMO DA FILA (Para o botão "Realizar Contato") ---
-    # Tenta pegar o primeiro título pendente para abrir direto no modal
     proximo_titulo = Titulo.objects.filter(status='ABERTO').order_by('dt_vencimento').first()
     proximo_id = proximo_titulo.id if proximo_titulo else None
     nome_proximo = proximo_titulo.devedor.nome if proximo_titulo else ""
 
-       # --- 3. CÁLCULO DE KPIs (Diário e Mensal) ---
+    # --- 3. CÁLCULO DE KPIs (Diário e Mensal) ---
     hoje = date.today()
     inicio_mes = hoje.replace(day=1)
     
-    # Filtros de Data
     contatos_hoje_qs = HistoricoContato.objects.filter(data_hora__date=hoje)
     contatos_mes_qs = HistoricoContato.objects.filter(data_hora__date__gte=inicio_mes)
     
-    # Totais
     qtd_hoje = contatos_hoje_qs.count()
     qtd_mes = contatos_mes_qs.count()
     
-    # "Positivos" (Consideramos acordos ou promessas como positivo para o exemplo)
-    # Ajuste a lógica conforme o que você escreve nas anotações
     positivos_hoje = contatos_hoje_qs.filter(Q(anotacao__icontains='acordo') | Q(anotacao__icontains='pago')).count()
     positivos_mes = contatos_mes_qs.filter(Q(anotacao__icontains='acordo') | Q(anotacao__icontains='pago')).count()
     
-    # Taxa de Conversão
     taxa_hoje = (positivos_hoje / qtd_hoje * 100) if qtd_hoje > 0 else 0
     taxa_mes = (positivos_mes / qtd_mes * 100) if qtd_mes > 0 else 0
     
-    # Agendamentos (Baseado em vencimentos)
+    # Agendamentos
     agendados_hoje = Titulo.objects.filter(dt_vencimento=hoje, status='ABERTO').count()
     agendados_amanha = Titulo.objects.filter(dt_vencimento=hoje + timedelta(days=1), status='ABERTO').count()
     agendados_futuros = Titulo.objects.filter(dt_vencimento__gt=hoje + timedelta(days=1), status='ABERTO').count()
 
     # --- 4. DADOS PARA GRÁFICOS ---
     
-    # Mapa de Contatos (Últimos 7 dias)
+    # A) Aging List (Envelhecimento da Dívida) - CRÍTICO PARA DEMO
+    # Lógica: Filtra títulos abertos e soma saldos baseados na data de vencimento
+    titulos_abertos = Titulo.objects.filter(status='ABERTO')
+    
+    # Faixas de datas
+    d30 = hoje - timedelta(days=30)
+    d60 = hoje - timedelta(days=60)
+    d90 = hoje - timedelta(days=90)
+
+    # Cálculos dos buckets
+    v_a_vencer = titulos_abertos.filter(dt_vencimento__gte=hoje).aggregate(Sum('saldo_atual'))['saldo_atual__sum'] or 0
+    v_30_dias  = titulos_abertos.filter(dt_vencimento__lt=hoje, dt_vencimento__gte=d30).aggregate(Sum('saldo_atual'))['saldo_atual__sum'] or 0
+    v_60_dias  = titulos_abertos.filter(dt_vencimento__lt=d30, dt_vencimento__gte=d60).aggregate(Sum('saldo_atual'))['saldo_atual__sum'] or 0
+    v_90_dias  = titulos_abertos.filter(dt_vencimento__lt=d60, dt_vencimento__gte=d90).aggregate(Sum('saldo_atual'))['saldo_atual__sum'] or 0
+    v_90_plus  = titulos_abertos.filter(dt_vencimento__lt=d90).aggregate(Sum('saldo_atual'))['saldo_atual__sum'] or 0
+
+    aging_labels = ['A Vencer', 'Até 30 Dias', '30 a 60 Dias', '60 a 90 Dias', 'Mais de 90 Dias']
+    aging_data = [float(v_a_vencer), float(v_30_dias), float(v_60_dias), float(v_90_dias), float(v_90_plus)]
+
+    # B) Mapa de Contatos (Linha do Tempo)
     data_limite = hoje - timedelta(days=7)
     mapa_contatos = HistoricoContato.objects.filter(data_hora__date__gte=data_limite)\
         .annotate(data_dia=TruncDate('data_hora'))\
@@ -61,7 +69,7 @@ def dashboard(request):
     line_labels = [x['data_dia'].strftime('%d/%m') for x in mapa_contatos]
     line_data = [x['qtd'] for x in mapa_contatos]
 
-    # Tabulação (Tipo de Contato)
+    # C) Tabulação (Donut Chart)
     tabulacao = HistoricoContato.objects.values('tipo').annotate(qtd=Count('id'))
     donut_labels = [x['tipo'] for x in tabulacao]
     donut_data = [x['qtd'] for x in tabulacao]
@@ -77,18 +85,19 @@ def dashboard(request):
     return render(request, 'core/dashboard.html', {
         'total_receber': total_receber,
         'qtd_titulos': qtd_titulos,
-        'titulos': titulos_query[:20], # Limita a 20 na tabela
+        'titulos': titulos_query[:20],
         
-        # KPIs Calculados
+        # KPIs
         'qtd_hoje': qtd_hoje, 'positivos_hoje': positivos_hoje, 'taxa_hoje': round(taxa_hoje, 1),
         'qtd_mes': qtd_mes, 'positivos_mes': positivos_mes, 'taxa_mes': round(taxa_mes, 1),
         'agendados_hoje': agendados_hoje, 'agendados_amanha': agendados_amanha, 'agendados_futuros': agendados_futuros,
         
-        # Gráficos
+        # Gráficos (Agora com o Aging incluído)
         'line_labels': line_labels, 'line_data': line_data,
         'donut_labels': donut_labels, 'donut_data': donut_data,
+        'aging_labels': aging_labels, 'aging_data': aging_data,
         
-        # Próximo da Fila (Para o botão principal)
+        # Próximo da Fila
         'proximo_id': proximo_id,
         'nome_proximo': nome_proximo,
     })
@@ -110,12 +119,12 @@ def detalhe_titulo(request, id):
                     anotacao=texto
                 )
 
-        # CENÁRIO B: Atualizar Dados do Cliente (NOVO)
+        # CENÁRIO B: Atualizar Dados do Cliente
         elif 'btn_atualizar_cliente' in request.POST:
             devedor = titulo.devedor
             devedor.email = request.POST.get('email')
             devedor.telefone = request.POST.get('telefone')
-            devedor.pessoa_contato = request.POST.get('pessoa_contato') # Novo Campo
+            devedor.pessoa_contato = request.POST.get('pessoa_contato')
             devedor.logradouro = request.POST.get('logradouro')
             devedor.numero = request.POST.get('numero')
             devedor.bairro = request.POST.get('bairro')
@@ -126,7 +135,6 @@ def detalhe_titulo(request, id):
             
             mensagem = "Dados do cliente atualizados com sucesso!"
             
-            # Log automático da alteração
             HistoricoContato.objects.create(
                 titulo=titulo,
                 usuario=request.user,
@@ -224,18 +232,16 @@ def importar_arquivo_view(request):
         arquivo = request.FILES['arquivo_csv']
         
         try:
-            # 1. Leitura com Pandas (Direto da memória)
+            # 1. Leitura com Pandas
             try:
                 df = pd.read_csv(arquivo, sep=';', encoding='utf-8', dtype=str)
             except UnicodeDecodeError:
                 df = pd.read_csv(arquivo, sep=';', encoding='cp1252', dtype=str)
             
-            # Limpa nomes das colunas
             df.columns = df.columns.str.strip()
-            
             processados = 0
             
-            # 2. Processamento (Mesma lógica do Script)
+            # 2. Processamento
             for index, row in df.iterrows():
                 # Tratamento de Datas
                 try:
@@ -244,7 +250,6 @@ def importar_arquivo_view(request):
                     dt_venc = date.today()
                 
                 try:
-                    # Tenta DT_GERACAO ou DT_EMISSAO
                     str_emissao = row.get('DT_GERACAO') or row.get('DT_EMISSAO')
                     dt_emiss = datetime.strptime(str_emissao, '%d/%m/%Y').date()
                 except:
@@ -275,7 +280,6 @@ def importar_arquivo_view(request):
                 )
                 
                 # Upsert Título
-                # Pega COD_TITULO ou COD_TITULO_SANKHYA
                 cod_titulo = row.get('COD_TITULO') or row.get('COD_TITULO_SANKHYA')
                 nosso_numero = row.get('NOSSO_NUMERO') or row.get('NUMERO_DOC')
 

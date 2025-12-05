@@ -1,272 +1,406 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <title>Gestão de Recebíveis | Painel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <style>
         :root {
-            --primary-color: #2c3e50; /* Navy */
-            --secondary-color: #95a5a6; /* Slate */
+            --primary-color: #2c3e50;
+            /* Navy */
+            --secondary-color: #95a5a6;
+            /* Slate */
             --bg-body: #f4f6f9;
             --text-main: #2c3e50;
         }
-        body { background-color: var(--bg-body); font-family: 'Inter', sans-serif; color: var(--text-main); }
+
+        body {
+            background-color: var(--bg-body);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+        }
 
         /* Navbar */
-        .navbar { background-color: #fff; border-bottom: 1px solid #e1e4e8; box-shadow: 0 2px 4px rgba(0,0,0,0.02); padding: 0.8rem 0; }
-        .navbar-brand { color: var(--primary-color) !important; font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px; text-transform: uppercase; }
-        .nav-link { color: #555 !important; font-weight: 500; font-size: 0.9rem; margin-right: 20px; }
-        .nav-link:hover { color: var(--primary-color) !important; }
+        .navbar {
+            background-color: #fff;
+            border-bottom: 1px solid #e1e4e8;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            padding: 0.8rem 0;
+        }
 
-        /* Header Operador */
-        .operador-section { display: flex; justify-content: space-between; align-items: center; margin: 2.5rem 0 2rem 0; }
-        .operador-title { font-size: 1.8rem; font-weight: 300; color: #333; margin: 0; }
-        .btn-action { background-color: var(--primary-color); color: white; border: none; padding: 10px 25px; font-weight: 600; border-radius: 4px; font-size: 0.9rem; }
-        .btn-action:hover { background-color: #1a252f; color: white; transform: translateY(-1px); }
+        .navbar-brand {
+            color: var(--primary-color) !important;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
 
-        /* Scorecards */
-        .scorecard { background: #fff; border: 1px solid #e1e4e8; border-radius: 6px; display: flex; margin-bottom: 1.5rem; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.01); }
-        .scorecard-header { background-color: #f8f9fa; border-right: 1px solid #e1e4e8; width: 100px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--secondary-color); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; padding: 1rem; }
-        .scorecard-body { flex-grow: 1; display: flex; justify-content: space-around; align-items: center; padding: 1.2rem 0; }
-        
-        .stat-block { text-align: center; border-right: 1px solid #f0f0f0; flex-grow: 1; }
-        .stat-block:last-child { border-right: none; }
-        .stat-num { font-size: 1.6rem; font-weight: 700; color: var(--primary-color); line-height: 1.2; display: block; }
-        .stat-desc { font-size: 0.7rem; color: #888; text-transform: uppercase; margin-top: 6px; display: block; font-weight: 600; }
+        /* Cards de KPI */
+        .kpi-card {
+            background: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            transition: transform 0.2s;
+            height: 100%;
+        }
 
-        /* Gráficos */
-        .chart-card { background: #fff; border: 1px solid #e1e4e8; border-radius: 6px; padding: 1.5rem; margin-bottom: 1.5rem; }
-        .chart-title { font-size: 0.9rem; font-weight: 700; color: var(--secondary-color); margin-bottom: 1.5rem; text-align: center; text-transform: uppercase; letter-spacing: 0.5px; }
-        
-        /* Modal */
-        .modal-fullscreen-custom { max-width: 96%; width: 96%; margin: 1rem auto; }
-        .modal-content { height: 92vh; border: none; border-radius: 8px; overflow: hidden; }
-        .modal-header { background-color: var(--primary-color); color: white; padding: 12px 25px; }
-        iframe { width: 100%; height: 100%; border: none; background-color: #f4f6f9; }
-        
-        .search-input { border-radius: 20px 0 0 20px; border: 1px solid #dce1e6; padding-left: 15px; }
-        .search-btn { border-radius: 0 20px 20px 0; background-color: #e9ecef; border: 1px solid #dce1e6; color: #555; }
+        .kpi-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 0.5rem 0;
+        }
+
+        .kpi-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+
+        /* Botão de Ação Principal */
+        .btn-action-main {
+            background-color: #2ecc71;
+            color: #fff;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(46, 204, 113, 0.2);
+        }
+
+        .btn-action-main:hover {
+            background-color: #27ae60;
+            color: #fff;
+            transform: scale(1.02);
+        }
+
+        /* Tabelas */
+        .table-custom th {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--secondary-color);
+            font-weight: 600;
+            border-top: none;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-aberto {
+            background-color: #e8f6ff;
+            color: #3498db;
+        }
+
+        .status-acordo {
+            background-color: #eafaf1;
+            color: #2ecc71;
+        }
     </style>
 </head>
+
 <body>
 
-    <nav class="navbar navbar-expand-lg">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="#">Gestão de Cobrança</a>
-            <div class="collapse navbar-collapse justify-content-end">
-                <ul class="navbar-nav">
-                    <li class="nav-item"><a class="nav-link" href="#">Operacional</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'regua_visual' %}">Estratégia</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'importar_arquivo' %}">Dados</a></li>
-                    <li class="nav-item"><span class="nav-link fw-bold text-dark">Admin</span></li>
-                </ul>
+            <a class="navbar-brand" href="#">
+                📊 Gestão de Cobrança <span style="font-weight: 300; font-size: 0.9rem; color: #7f8c8d;">| Super
+                    Foods</span>
+            </a>
+            <div class="d-flex gap-3">
+                <a href="{% url 'regua_visual' %}" class="btn btn-outline-secondary btn-sm">⚙️ Régua</a>
+                <a href="{% url 'importar_arquivo' %}" class="btn btn-outline-primary btn-sm">📥 Importar CSV</a>
+                <span class="navbar-text ms-3"><small>Olá, {{ request.user.username|default:'Operador' }}</small></span>
             </div>
         </div>
     </nav>
 
-    <div class="container py-4">
-        
-        <div class="operador-section">
-            <div>
-                <h1 class="operador-title">Painel do Operador</h1>
-                <p class="text-muted small mb-0">Performance em Tempo Real</p>
+    <div class="container" style="margin-top: 100px; margin-bottom: 50px;">
+
+        <!-- Bloco de Alertas (Messages) -->
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <!-- Linha 1: KPIs Principais + Botão de Ação -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-label">Total em Aberto</div>
+                    <div class="kpi-value text-danger">R$ {{ total_receber|floatformat:2 }}</div>
+                    <small class="text-muted">{{ qtd_titulos }} títulos pendentes</small>
+                </div>
             </div>
-            {% if proximo_id %}
-                <button onclick="abrirNegociacao('{% url 'detalhe_titulo' proximo_id %}', '{{ nome_proximo }}')" 
-                        class="btn btn-action shadow-sm">
-                    📞 Iniciar Atendimento
+
+            <div class="col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-label">Eficiência Hoje</div>
+                    <div class="kpi-value">{{ taxa_hoje }}%</div>
+                    <small class="text-success">{{ positivos_hoje }} acordos de {{ qtd_hoje }} contatos</small>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-label">Agenda do Dia</div>
+                    <div class="kpi-value">{{ agendados_hoje }}</div>
+                    <small class="text-muted">Títulos vencendo hoje</small>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                {% if proximo_id %}
+                <button onclick="abrirNegociacao('{% url 'detalhe_titulo' proximo_id %}', '{{ nome_proximo }}')"
+                    class="btn-action-main h-100">
+                    📞 Iniciar Contato<br>
+                    <span style="font-size: 0.8rem; font-weight: 400;">Próximo: {{ nome_proximo|truncatechars:15
+                        }}</span>
                 </button>
-            {% else %}
-                <button disabled class="btn btn-secondary opacity-50">Sem Pendências</button>
-            {% endif %}
-        </div>
-
-        <div class="row">
-            <div class="col-12">
-                <div class="scorecard">
-                    <div class="scorecard-header">Hoje</div>
-                    <div class="scorecard-body">
-                        <div class="stat-block"><span class="stat-num">{{ qtd_hoje }}</span><span class="stat-desc">Contatos</span></div>
-                        <div class="stat-block"><span class="stat-num">{{ positivos_hoje }}</span><span class="stat-desc">Efetivos</span></div>
-                        <div class="stat-block"><span class="stat-num">{{ taxa_hoje }}%</span><span class="stat-desc">Conversão</span></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12">
-                <div class="scorecard">
-                    <div class="scorecard-header">Carteira</div>
-                    <div class="scorecard-body">
-                        <div class="stat-block"><span class="stat-num">{{ agendados_hoje }}</span><span class="stat-desc">Vencendo Hoje</span></div>
-                        <div class="stat-block"><span class="stat-num">{{ qtd_titulos }}</span><span class="stat-desc">Total Títulos</span></div>
-                        <div class="stat-block"><span class="stat-num text-success" style="color: #27ae60;">R$ {{ total_receber|floatformat:0 }}</span><span class="stat-desc">Saldo Aberto</span></div>
-                    </div>
-                </div>
+                {% else %}
+                <button class="btn btn-secondary h-100 w-100" disabled>
+                    ✅ Fila Zerada<br>
+                    <small>Bom trabalho!</small>
+                </button>
+                {% endif %}
             </div>
         </div>
 
-        <div class="chart-card">
-            <h3 class="chart-title">Distribuição da Dívida por Atraso (Aging)</h3>
-            <div style="height: 120px;">
-                <canvas id="agingChart"></canvas>
-            </div>
-        </div>
-
-        <div class="chart-card">
-            <h3 class="chart-title">Volume de Acionamentos (7 dias)</h3>
-            <div style="height: 200px;">
-                <canvas id="lineChart"></canvas>
-            </div>
-        </div>
-
-        <div class="row">
+        <!-- Linha 2: Gráficos -->
+        <div class="row g-4 mb-4">
+            <!-- Aging List (CRÍTICO) -->
             <div class="col-md-6">
-                <div class="chart-card">
-                    <h3 class="chart-title">Resultado (Hoje)</h3>
-                    <div style="height: 200px; display: flex; justify-content: center;">
-                        <canvas id="donutChart1"></canvas>
+                <div class="kpi-card">
+                    <div class="kpi-label mb-3">Envelhecimento da Carteira (Aging List)</div>
+                    <div style="height: 250px;">
+                        <canvas id="agingChart"></canvas>
                     </div>
                 </div>
             </div>
+
+            <!-- Mapa de Contatos -->
             <div class="col-md-6">
-                <div class="chart-card">
-                    <h3 class="chart-title">Canais Utilizados</h3>
-                    <div style="height: 200px; display: flex; justify-content: center;">
-                        <canvas id="donutChart2"></canvas>
+                <div class="kpi-card">
+                    <div class="kpi-label mb-3">Produtividade (Últimos 7 dias)</div>
+                    <div style="height: 250px;">
+                        <canvas id="lineChart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="card border-0 mb-5 bg-transparent">
-            <div class="d-flex justify-content-center">
-                <form method="GET" class="d-flex w-50">
-                    <input type="text" name="q" class="form-control search-input" placeholder="Localizar cliente..." value="{{ request.GET.q|default:'' }}">
-                    <button class="btn search-btn" type="submit">🔍</button>
+        <!-- Linha 3: Tabela de Devedores -->
+        <div class="kpi-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="kpi-label" style="font-size: 1rem;">Fila de Cobrança Prioritária</div>
+                <form class="d-flex" method="GET">
+                    <input class="form-control form-control-sm me-2" type="search" name="q"
+                        placeholder="Buscar cliente ou título..." value="{{ request.GET.q|default:'' }}">
+                    <button class="btn btn-outline-dark btn-sm" type="submit">Buscar</button>
                 </form>
             </div>
-            
-            {% if titulos %}
-            <div class="card mt-3 border shadow-sm">
-                <table class="table table-hover mb-0 small">
-                    <thead class="bg-light text-uppercase text-muted">
-                        <tr><th class="ps-4">Cliente</th><th>Valor</th><th class="text-end pe-4">Ação</th></tr>
+
+            <div class="table-responsive">
+                <table class="table table-hover table-custom align-middle">
+                    <thead>
+                        <tr>
+                            <th>Vencimento</th>
+                            <th>Cliente / Devedor</th>
+                            <th>Documento</th>
+                            <th>Valor Atual</th>
+                            <th>Status</th>
+                            <th class="text-end">Ação</th>
+                        </tr>
                     </thead>
                     <tbody>
                         {% for t in titulos %}
                         <tr>
-                            <td class="ps-4 fw-bold">{{ t.devedor.nome }}</td>
-                            <td>R$ {{ t.valor_atualizado }}</td>
-                            <td class="text-end pe-4">
-                                <button onclick="abrirNegociacao('{% url 'detalhe_titulo' t.id %}', '{{ t.devedor.nome }}')" 
-                                        class="btn btn-sm btn-outline-primary fw-bold">Abrir Ficha</button>
+                            <td>
+                                {% if t.dt_vencimento < hoje %} <span class="text-danger fw-bold">{{
+                                    t.dt_vencimento|date:"d/m/Y" }}</span>
+                                    {% else %}
+                                    {{ t.dt_vencimento|date:"d/m/Y" }}
+                                    {% endif %}
                             </td>
+                            <td>
+                                <div class="fw-bold">{{ t.devedor.nome }}</div>
+                                <small class="text-muted">{{ t.devedor.cidade }}/{{ t.devedor.uf }}</small>
+                            </td>
+                            <td>{{ t.numero_doc }}</td>
+                            <td class="fw-bold">R$ {{ t.saldo_atual|floatformat:2 }}</td>
+                            <td><span class="status-badge status-aberto">{{ t.status }}</span></td>
+                            <td class="text-end">
+                                <button
+                                    onclick="abrirNegociacao('{% url 'detalhe_titulo' t.id %}', '{{ t.devedor.nome }}')"
+                                    class="btn btn-sm btn-light border">
+                                    Abrir
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">Nenhum título encontrado na fila.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-            {% endif %}
         </div>
 
     </div>
 
+    <!-- Modal de Negociação (Iframe) -->
     <div class="modal fade" id="janelaNegociacao" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-        <div class="modal-dialog modal-fullscreen-custom">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title text-white" id="tituloJanela">Atendimento</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content" style="height: 90vh;">
+                <div class="modal-header py-2 bg-light">
+                    <h6 class="modal-title" id="tituloJanela">Negociação</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <iframe name="frameNegociacao" id="frameNegociacao" src=""></iframe>
+                <div class="modal-body p-0">
+                    <iframe id="frameNegociacao" src="" style="width: 100%; height: 100%; border: none;"></iframe>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Cores
-        const colors = { primary: '#2c3e50', accent: '#95a5a6', success: '#27ae60', danger: '#c0392b', warning: '#f39c12' };
+    <!-- Dados para os Gráficos (JSON Script) -->
+    {{ aging_labels|json_script:"aging-labels-data" }}
+    {{ aging_data|json_script:"aging-values-data" }}
+    {{ line_labels|json_script:"line-labels-data" }}
+    {{ line_data|json_script:"line-values-data" }}
 
-        // 1. Gráfico de Aging (Barras)
-        const agingData = {
-            '0-30 dias': {{ faixas_dados.0_30|default:0 }},
-            '31-60 dias': {{ faixas_dados.31_60|default:0 }},
-            '61-90 dias': {{ faixas_dados.61_90|default:0 }},
-            '90+ dias': {{ faixas_dados.90_MAIS|default:0 }},
+    <script>
+        // Configurações Globais de Cores
+        const colors = {
+            primary: '#2c3e50',
+            success: '#27ae60',
+            info: '#2980b9',
+            warning: '#f39c12',
+            danger: '#c0392b'
         };
-        new Chart(document.getElementById('agingChart'), {
-            type: 'bar',
-            data: {
-                labels: Object.keys(agingData),
-                datasets: [{
-                    data: Object.values(agingData),
-                    backgroundColor: [colors.success, colors.warning, colors.warning, colors.danger],
-                    borderRadius: 4, barThickness: 30
-                }]
-            },
-            options: {
-                indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { x: { display: false }, y: { grid: { display: false } } }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            // Verifica se o Chart.js foi carregado
+            if (typeof Chart === 'undefined') {
+                console.error("Chart.js não foi carregado corretamente.");
+                return;
+            }
+
+            // 1. Gráfico de AGING (Envelhecimento)
+            const agingLabels = JSON.parse(document.getElementById('aging-labels-data').textContent);
+            const agingData = JSON.parse(document.getElementById('aging-values-data').textContent);
+
+            const ctxAging = document.getElementById('agingChart');
+            if (ctxAging) {
+                new Chart(ctxAging, {
+                    type: 'bar',
+                    data: {
+                        labels: agingLabels,
+                        datasets: [{
+                            label: 'Valor em Aberto (R$)',
+                            data: agingData,
+                            backgroundColor: [
+                                '#2ecc71', // Verde (A Vencer)
+                                '#3498db', // Azul (Até 30)
+                                '#f1c40f', // Amarelo (30-60)
+                                '#e67e22', // Laranja (60-90)
+                                '#c0392b'  // Vermelho (+90)
+                            ],
+                            borderRadius: 4,
+                            barPercentage: 0.6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        return ' R$ ' + context.parsed.y.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { borderDash: [2, 2] }
+                            },
+                            x: {
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 2. Gráfico de Produtividade (Line Chart)
+            const lineLabels = JSON.parse(document.getElementById('line-labels-data').textContent);
+            const lineData = JSON.parse(document.getElementById('line-values-data').textContent);
+
+            const ctxLine = document.getElementById('lineChart');
+            if (ctxLine) {
+                new Chart(ctxLine, {
+                    type: 'line',
+                    data: {
+                        labels: lineLabels,
+                        datasets: [{
+                            label: 'Contatos Realizados',
+                            data: lineData,
+                            borderColor: colors.info,
+                            backgroundColor: 'rgba(41, 128, 185, 0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } }, x: { grid: { display: false } } }
+                    }
+                });
             }
         });
 
-        // 2. Mapa de Contatos (Linha)
-        const lineLabels = {{ line_labels|safe }};
-        const lineData = {{ line_data|safe }};
-        if(lineLabels.length > 0) {
-            new Chart(document.getElementById('lineChart'), {
-                type: 'line',
-                data: {
-                    labels: lineLabels,
-                    datasets: [{
-                        label: 'Contatos', data: lineData,
-                        borderColor: colors.primary, backgroundColor: 'rgba(44, 62, 80, 0.05)',
-                        tension: 0.3, fill: true, pointRadius: 4, pointBackgroundColor: colors.primary
-                    }]
-                },
-                options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#f0f0f0' } }, x: { grid: { display: false } } } }
-            });
-        }
-
-        // 3. Donut Charts
-        const donutLabels = {{ donut_labels|safe }};
-        const donutData = {{ donut_data|safe }};
-        const donutConfig = {
-            type: 'doughnut',
-            data: {
-                labels: donutLabels,
-                datasets: [{
-                    data: donutData,
-                    backgroundColor: [colors.primary, colors.success, colors.accent, colors.danger],
-                    borderWidth: 0, cutout: '70%'
-                }]
-            },
-            options: { plugins: { legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 8 } } } }
-        };
-
-        if(donutLabels.length > 0) {
-            new Chart(document.getElementById('donutChart1'), donutConfig); // Resultado (placeholder)
-            new Chart(document.getElementById('donutChart2'), donutConfig); // Tabulação
-        }
-
-        // Modal Logic
+        // Função do Modal
         function abrirNegociacao(url, nome) {
             document.getElementById('tituloJanela').innerText = "Atendendo: " + nome;
             document.getElementById('frameNegociacao').src = url;
             var myModal = new bootstrap.Modal(document.getElementById('janelaNegociacao'));
             myModal.show();
         }
-        
+
+        // Recarrega a página ao fechar o modal para atualizar os dados
         document.getElementById('janelaNegociacao').addEventListener('hidden.bs.modal', function () {
             location.reload();
         });
     </script>
 </body>
+
 </html>
