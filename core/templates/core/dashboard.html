@@ -172,7 +172,8 @@
 
             <div class="col-md-3">
                 {% if proximo_id %}
-                <button onclick="abrirNegociacao('{% url 'detalhe_titulo' proximo_id %}', '{{ nome_proximo }}')"
+                <button
+                    onclick="abrirNegociacao('{% url 'detalhe_titulo' proximo_id %}', '{{ nome_proximo|escapejs }}')"
                     class="btn-action-main h-100">
                     📞 Iniciar Contato<br>
                     <span style="font-size: 0.8rem; font-weight: 400;">Próximo: {{ nome_proximo|truncatechars:15
