@@ -396,6 +396,10 @@
 
         // Função do Modal
         function abrirNegociacao(url, nome) {
+            if (typeof bootstrap === 'undefined') {
+                alert("Erro: Bootstrap JS não foi carregado. Verifique sua conexão.");
+                return;
+            }
             document.getElementById('tituloJanela').innerText = "Atendendo: " + nome;
             document.getElementById('frameNegociacao').src = url;
             var myModal = new bootstrap.Modal(document.getElementById('janelaNegociacao'));
