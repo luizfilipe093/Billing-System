@@ -3,6 +3,8 @@ version: '3.8'
 services:
   web:
     build: .
+    # Confguração para acesso em todas as maquinas da rede local
+    command: python manage.py runserver 0.0.0.0:8000
     # Mapeia a porta 8000 do container para a 8000 do seu PC
     ports:
       - "8000:8000"
