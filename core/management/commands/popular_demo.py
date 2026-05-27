@@ -7,13 +7,13 @@ class Command(BaseCommand):
     help = 'Popula o banco de dados com dados cenográficos para a apresentação (Aging List calibrado)'
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.WARNING("--- 🎬 INICIANDO CENOGRAFIA PARA O 'DIA D' ---"))
+        self.stdout.write(self.style.WARNING("--- INICIANDO CENOGRAFIA PARA O 'DIA D' ---"))
         
         # 1. LIMPEZA CIRÚRGICA
         # Removemos apenas os dados da demo para não duplicar se rodar 2 vezes
         nomes_demo = ["Transportadora Veloz S.A.", "Supermercado Aliança", "Farmácia Saúde Total", "Oficina do Pedro"]
         Devedor.objects.filter(nome__in=nomes_demo).delete()
-        self.stdout.write("✓ Dados antigos da demo removidos.")
+        self.stdout.write("[OK] Dados antigos da demo removidos.")
 
         # 2. CRIANDO OS ATORES (DEVEDORES)
         
@@ -27,8 +27,7 @@ class Command(BaseCommand):
             telefone="(11) 99999-1234",
             cidade="São Paulo",
             uf="SP",
-            logradouro="Rodovia Anhanguera, km 15",
-            status='ATIVO'
+            logradouro="Rodovia Anhanguera, km 15"
         )
 
         # B) O Caso Médio (Para Negociação)
@@ -41,8 +40,7 @@ class Command(BaseCommand):
             telefone="(21) 98888-5678",
             cidade="Rio de Janeiro",
             uf="RJ",
-            logradouro="Av. Atlântica, 1500",
-            status='ATIVO'
+            logradouro="Av. Atlântica, 1500"
         )
 
         # C) O Caso Recente
@@ -54,8 +52,7 @@ class Command(BaseCommand):
             telefone="(31) 97777-4444",
             cidade="Belo Horizonte",
             uf="MG",
-            logradouro="Rua das Chaves, 40",
-            status='ATIVO'
+            logradouro="Rua das Chaves, 40"
         )
 
         # D) O Bom Pagador
@@ -67,11 +64,10 @@ class Command(BaseCommand):
             telefone="(41) 3333-2222",
             cidade="Curitiba",
             uf="PR",
-            logradouro="Rua das Flores, 100",
-            status='ATIVO'
+            logradouro="Rua das Flores, 100"
         )
 
-        self.stdout.write("✓ Devedores criados.")
+        self.stdout.write("[OK] Devedores criados.")
 
         # 3. INJETANDO TÍTULOS (A MÁGICA DO AGING)
         # Aqui definimos datas exatas para cair em cada faixa do gráfico
@@ -137,4 +133,4 @@ class Command(BaseCommand):
         )
 
         self.stdout.write(self.style.SUCCESS("--- SUCESSO! DADOS DO 'DIA D' INJETADOS ---"))
-        self.stdout.write(self.style.SUCCESS("⚠️  AÇÃO NECESSÁRIA: Dê F5 no Dashboard para ver o gráfico colorido."))
+        self.stdout.write(self.style.SUCCESS("ATENCAO: De F5 no Dashboard para ver o grafico colorido."))

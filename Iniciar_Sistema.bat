@@ -8,7 +8,7 @@ echo ==========================================
 echo.
 
 :: 1. Entra na pasta do projeto
-cd /d "C:\sistema_cobranca"
+cd /d "C:\sistema_cobranca\sistema-cobranca-django"
 
 :: 2. Ativa o Ambiente Virtual e roda o Waitress
 :: O comando 'call' garante que o script continue

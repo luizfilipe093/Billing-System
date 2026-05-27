@@ -86,7 +86,7 @@ class Command(BaseCommand):
                 
                 # Enviar
                 email.send(fail_silently=False)
-                self.stdout.write(self.style.SUCCESS("✓ E-mail com PDF enviado!"))
+                self.stdout.write(self.style.SUCCESS("[OK] E-mail com PDF enviado!"))
             else:
                 self.stdout.write(self.style.ERROR("Erro ao gerar PDF."))
 
